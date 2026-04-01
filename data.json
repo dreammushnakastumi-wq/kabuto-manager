@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-01T09:49:35.101Z",
+  "saved_at": "2026-04-01T09:49:43.149Z",
   "cases": [
     {
       "id": 1,
@@ -24,6 +24,15 @@
       "id": 3,
       "case_number": "1",
       "stage": "pupa",
+      "current_count": 0,
+      "capacity": 80,
+      "notes": null,
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "case_number": "1",
+      "stage": "adult",
       "current_count": 0,
       "capacity": 80,
       "notes": null,
