@@ -1,7 +1,17 @@
 {
   "version": "3.0",
-  "saved_at": null,
-  "cases": [],
+  "saved_at": "2026-04-01T09:49:18.901Z",
+  "cases": [
+    {
+      "id": 1,
+      "case_number": "1",
+      "stage": "egg",
+      "current_count": 0,
+      "capacity": 80,
+      "notes": null,
+      "is_active": true
+    }
+  ],
   "records": [],
   "beetles": []
 }
