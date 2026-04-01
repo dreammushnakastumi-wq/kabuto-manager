@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🪲 カブトムシ養殖管理</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --g:#2E7D32;--gl:#4CAF50;
+  --egg-b:#FFF9C4;--egg-c:#E65100;
+  --lv-b:#E8F5E9; --lv-c:#2E7D32;
+  --pp-b:#E3F2FD; --pp-c:#1565C0;
+  --ad-b:#F3E5F5; --ad-c:#6A1B9A;
+  --warn:#FF8F00;--danger:#C62828;
+  --bg:#F1F8E9;--nav:68px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Hiragino Kaku Gothic ProN','Yu Gothic UI','Meiryo UI',sans-serif;
+  background:var(--bg);margin:0;padding-bottom:calc(var(--nav) + 8px);}
+
+/* header */
+.hdr{background:var(--g);color:#fff;padding:13px 16px;position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 8px rgba(0,0,0,.18);}
+.hdr h1{font-size:1.08rem;margin:0;font-weight:700;}
+
+/* bottom nav */
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:#fff;
+  border-top:1px solid #e0e0e0;display:flex;z-index:200;
+  box-shadow:0 -2px 12px rgba(0,0,0,.08);}
+.nb{flex:1;border:none;background:none;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;font-size:.65rem;color:#bbb;cursor:pointer;
+  transition:color .15s;}
+.nb i{font-size:1.45rem;}
+.nb.on{color:var(--g);font-weight:700;}
+.nb.on i{transform:scale(1.08);}
+
+/* sections */
+.sec{display:none;padding:12px 12px 4px;}
+.sec.on{display:block;}
+
+/* card */
+.cd{background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.07);
+  padding:15px;margin-bottom:12px;}
+
+/* stage badges */
+.stg{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;
+  border-radius:20px;font-size:.73rem;font-weight:700;white-space:nowrap;}
+.s-parent{background:#FCE4EC;color:#880E4F;}
+.s-egg  {background:var(--egg-b);color:var(--egg-c);}
+.s-larva{background:var(--lv-b); color:var(--lv-c);}
+.s-pupa {background:var(--pp-b); color:var(--pp-c);}
+.s-adult{background:var(--ad-b); color:var(--ad-c);}
+
+/* metrics grid */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.mc{background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:14px;}
+.mt{font-size:.74rem;color:#888;margin-bottom:2px;}
+.mv{font-size:1.9rem;font-weight:800;color:var(--g);line-height:1.1;}
+.mu{font-size:.7rem;color:#aaa;}
+
+/* alerts */
+.ali{border-radius:10px;padding:10px 13px;margin-bottom:8px;
+  font-size:.84rem;display:flex;align-items:flex-start;gap:9px;}
+.al-gas   {background:#FFF8E1;border-left:4px solid #FFC107;}
+.al-stress{background:#FFEBEE;border-left:4px solid #EF5350;}
+.al-mold  {background:#E8F5E9;border-left:4px solid #66BB6A;}
+
+/* ── CASE PICKER (Input page) ── */
+.cp-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:4px;}
+.cp-card{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08);
+  padding:13px 11px;cursor:pointer;border:2.5px solid transparent;transition:all .15s;
+  display:flex;flex-direction:column;gap:4px;position:relative;}
+.cp-card:active{transform:scale(.97);}
+.cp-card.sel{border-color:var(--g);background:#F1F8E9;box-shadow:0 0 0 3px rgba(46,125,50,.12);}
+.cp-card.alert-card{border-color:#FF8F00;}
+.cp-num{font-size:1rem;font-weight:800;color:#333;}
+.cp-cnt{font-size:1.6rem;font-weight:900;line-height:1;color:var(--g);}
+.cp-unit{font-size:.65rem;color:#aaa;font-weight:600;}
+.cp-date{font-size:.62rem;color:#bbb;margin-top:2px;}
+.cp-alrt{position:absolute;top:8px;right:8px;font-size:.7rem;}
+
+/* ── COUNTER WIDGET ── */
+.ctr-wrap{margin-bottom:14px;}
+.ctr-label{font-size:.83rem;font-weight:700;color:#444;margin-bottom:7px;
+  display:flex;align-items:center;gap:5px;}
+.ctr-row{display:flex;align-items:center;gap:7px;}
+.cb{width:52px;height:52px;border-radius:50%;border:2.5px solid var(--g);
+  background:#fff;font-size:1.1rem;color:var(--g);font-weight:800;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  transition:all .12s;user-select:none;}
+.cb:active{background:var(--g);color:#fff;transform:scale(.93);}
+.cb.cb5{background:var(--g);color:#fff;border-color:var(--g);font-size:.85rem;
+  width:46px;height:46px;}
+.cb.cb5:active{background:#1B5E20;transform:scale(.93);}
+.cv{flex:1;text-align:center;font-size:2rem;font-weight:900;color:#333;
+  background:#f5f5f5;border-radius:12px;padding:7px 4px;min-width:0;}
+.cv.plus{color:var(--g);}
+.cv.minus{color:var(--danger);}
+
+/* slider */
+.envrow{display:flex;align-items:center;gap:9px;}
+.envrow input[type=range]{flex:1;accent-color:var(--g);height:6px;}
+.evv{min-width:56px;text-align:right;font-size:1.05rem;font-weight:700;}
+
+/* toggle buttons */
+.tgg{display:flex;gap:7px;}
+.tb{flex:1;padding:13px 4px;border:2px solid #ddd;border-radius:12px;
+  background:#fff;font-size:.95rem;cursor:pointer;text-align:center;font-weight:700;
+  transition:all .12s;}
+.tb:active{transform:scale(.96);}
+.tb.on{border-color:var(--g);background:#E8F5E9;color:var(--g);}
+
+/* main button */
+.bmain{background:var(--g);color:#fff;border:none;border-radius:14px;
+  padding:15px;font-size:1.05rem;font-weight:700;width:100%;cursor:pointer;
+  transition:all .12s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.bmain:active{background:#1B5E20;transform:scale(.98);}
+.bmain:disabled{background:#ccc;cursor:not-allowed;transform:none;}
+.bmain.sm{padding:10px;font-size:.88rem;max-width:fit-content;width:auto;border-radius:10px;}
+
+/* section label */
+.slbl{font-size:.7rem;font-weight:700;letter-spacing:.07em;color:#999;
+  text-transform:uppercase;margin:13px 0 8px;}
+.slbl:first-child{margin-top:0;}
+
+/* calc box */
+.calcbox{background:#F1F8E9;border:2.5px solid var(--g);border-radius:14px;
+  padding:13px 15px;margin:10px 0;}
+.calc-now{font-size:.8rem;color:#777;}
+.calc-new{font-size:1.7rem;font-weight:900;color:var(--g);}
+.calc-formula{font-size:.75rem;color:#999;margin-top:3px;}
+
+/* xfer box */
+.xfer-box{background:#EDE7F6;border:2px solid var(--ad-c);border-radius:12px;
+  padding:12px;margin-top:8px;}
+.xfer-box.incoming{background:#E3F2FD;border-color:var(--pp-c);}
+.xfer-box label{font-size:.8rem;font-weight:700;}
+
+/* case item */
+.ci{display:flex;align-items:center;gap:10px;padding:12px 14px;
+  background:#fff;border-radius:14px;margin-bottom:8px;
+  box-shadow:0 1px 5px rgba(0,0,0,.07);cursor:pointer;
+  border:2px solid transparent;transition:border-color .12s;}
+.ci:active{border-color:var(--g);}
+.ci-info{flex:1;min-width:0;}
+.ci-name{font-weight:700;font-size:.93rem;}
+.ci-sub{font-size:.75rem;color:#888;margin-top:1px;}
+
+/* quick record btn on case */
+.ci-rec{background:var(--g);color:#fff;border:none;border-radius:9px;
+  padding:7px 13px;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0;
+  transition:all .12s;}
+.ci-rec:active{background:#1B5E20;}
+
+/* chart */
+.chw{position:relative;height:210px;}
+
+/* drop zone */
+.dz{border:2px dashed #ccc;border-radius:14px;padding:30px 16px;
+  text-align:center;color:#999;cursor:pointer;transition:all .15s;}
+.dz:hover,.dz.drag{border-color:var(--g);background:#F1F8E9;color:var(--g);}
+
+/* sub tabs */
+.stabs{display:flex;border-bottom:2px solid #eee;margin-bottom:14px;}
+.stab{flex:1;padding:10px 4px;text-align:center;font-size:.82rem;font-weight:700;
+  color:#bbb;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;
+  transition:color .12s;}
+.stab.on{color:var(--g);border-color:var(--g);}
+
+/* status colors */
+.good{color:var(--g);font-weight:700;}
+.warn{color:var(--warn);font-weight:700;}
+.bad {color:var(--danger);font-weight:700;}
+
+/* beetle card */
+.bc{display:flex;align-items:center;gap:11px;padding:11px 14px;background:#fff;
+  border-radius:14px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,.07);cursor:pointer;}
+.bsex{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:1.05rem;font-weight:800;flex-shrink:0;}
+.bsex-f{background:var(--egg-b);color:var(--egg-c);}
+.binfo{flex:1;min-width:0;}
+.bname{font-weight:700;font-size:.92rem;}
+.bsub{font-size:.74rem;color:#888;}
+
+/* toast */
+#toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(14px);
+  background:#333;color:#fff;padding:10px 22px;border-radius:26px;font-size:.88rem;
+  opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.25);}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* modal */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;
+  display:flex;align-items:flex-end;}
+.msh{background:#fff;border-radius:22px 22px 0 0;padding:20px;
+  width:100%;max-height:90vh;overflow-y:auto;}
+.msh h3{margin-top:0;font-size:1.06rem;}
+input.form-control,select.form-select,textarea.form-control{
+  font-size:.97rem;padding:11px 13px;border-radius:11px;}
+label.form-label{font-size:.82rem;font-weight:700;color:#555;margin-bottom:4px;}
+
+/* lifecycle flow */
+.lifecycle{display:flex;align-items:center;gap:4px;overflow-x:auto;padding:4px 0 8px;
+  scrollbar-width:none;}
+.lifecycle::-webkit-scrollbar{display:none;}
+.lf-node{display:flex;flex-direction:column;align-items:center;gap:1px;background:#fff;
+  border-radius:13px;padding:10px 8px;min-width:62px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);flex-shrink:0;}
+.lf-icon{font-size:1.3rem;}
+.lf-lbl{font-size:.6rem;color:#888;font-weight:700;}
+.lf-cnt{font-size:1.15rem;font-weight:800;line-height:1.1;}
+.lf-unit{font-size:.56rem;color:#bbb;}
+.lf-arr{color:#ccc;font-size:1rem;flex-shrink:0;}
+
+/* health bar */
+.hbar{height:7px;border-radius:4px;background:#eee;overflow:hidden;margin:3px 0;}
+.hbar-f{height:100%;border-radius:4px;transition:width .5s ease;}
+
+/* grade badge */
+.grd{display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:10px;font-size:.97rem;font-weight:900;
+  flex-shrink:0;letter-spacing:-.02em;}
+.grd-S{background:linear-gradient(135deg,#FFD700,#FF8F00);color:#fff;box-shadow:0 2px 6px rgba(255,160,0,.4);}
+.grd-A{background:#4CAF50;color:#fff;}
+.grd-B{background:#2196F3;color:#fff;}
+.grd-C{background:#FF9800;color:#fff;}
+.grd-D{background:#EF5350;color:#fff;}
+.grd-F{background:#9E9E9E;color:#fff;}
+.grd-Q{background:#E0E0E0;color:#aaa;}
+
+/* health card */
+.hcd{display:flex;align-items:center;gap:10px;padding:11px 13px;background:#fff;
+  border-radius:13px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,.07);}
+.hcd-info{flex:1;min-width:0;}
+.hcd-name{font-weight:700;font-size:.9rem;margin-bottom:2px;}
+.hcd-sub{font-size:.7rem;color:#888;}
+
+/* funnel */
+.fnl-row{display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.fnl-icon{width:22px;text-align:center;font-size:.95rem;flex-shrink:0;}
+.fnl-lbl{width:42px;font-size:.65rem;color:#666;flex-shrink:0;text-align:right;}
+.fnl-bwrap{flex:1;height:28px;background:#f0f0f0;border-radius:7px;overflow:hidden;}
+.fnl-bar{height:100%;border-radius:7px;display:flex;align-items:center;padding:0 9px;
+  font-size:.73rem;font-weight:700;color:#fff;transition:width .6s ease;
+  white-space:nowrap;min-width:3px;}
+.fnl-cnt{min-width:52px;text-align:right;font-size:.82rem;font-weight:800;color:#333;}
+.fnl-pct{min-width:36px;text-align:right;font-size:.66rem;font-weight:700;}
+
+/* info box */
+.info-box{background:#F3E5F5;border:1px solid #CE93D8;border-radius:11px;
+  padding:11px 13px;margin-bottom:10px;font-size:.83rem;color:#6A1B9A;}
+
+/* selected case header bar */
+.sel-case-bar{background:var(--g);color:#fff;border-radius:13px;padding:11px 14px;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sel-case-bar .name{font-size:1rem;font-weight:800;}
+.sel-case-bar .cnt{font-size:.82rem;opacity:.85;}
+.sel-case-bar .chg{background:rgba(255,255,255,.22);border:none;color:#fff;
+  border-radius:8px;padding:5px 12px;font-size:.78rem;font-weight:700;cursor:pointer;}
+
+/* table */
+.dt{width:100%;font-size:.8rem;border-collapse:collapse;}
+.dt th{background:var(--g);color:#fff;padding:8px 10px;text-align:left;font-weight:600;}
+.dt td{padding:8px 10px;border-bottom:1px solid #eee;}
+.dt tr:last-child td{border-bottom:none;}
+.dt tr:nth-child(even) td{background:#fafafa;}
+
+/* stage section header */
+.stage-hdr{display:flex;align-items:center;gap:7px;margin:12px 0 6px;}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <h1>🪲 カブトムシ養殖管理</h1>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span id="hdr-d" style="font-size:.77rem;opacity:.85"></span>
+    <button onclick="openGhModal()" style="background:rgba(255,255,255,.18);border:none;border-radius:7px;padding:4px 8px;color:#fff;font-size:.8rem;cursor:pointer" title="GitHub設定">⚙</button>
+  </div>
+</header>
+<div id="view-banner" style="display:none;background:#1565C0;color:#fff;text-align:center;padding:7px 12px;font-size:.76rem;position:sticky;top:68px;z-index:99">👁 閲覧モード — 最終更新: <span id="vb-date">—</span></div>
+
+<!-- ═══════════ DASHBOARD ═══════════ -->
+<section id="sec-dashboard" class="sec on">
+  <div class="cd" style="padding:12px 12px 9px">
+    <div class="slbl" style="margin-top:0">🔄 ライフサイクル全体</div>
+    <div class="lifecycle" id="lifecycle-flow">
+      <div style="color:#aaa;font-size:.8rem">読み込み中…</div>
+    </div>
+  </div>
+
+  <div class="mgrid">
+    <div class="mc"><div class="mt">管理ケース</div><div class="mv" id="m-cases">—</div><div class="mu">ケース</div></div>
+    <div class="mc"><div class="mt">総個体数</div><div class="mv" id="m-larva">—</div><div class="mu">匹/個</div></div>
+    <div class="mc"><div class="mt">サナギ化率</div><div class="mv" id="m-pupa">—</div><div class="mu">%</div></div>
+    <div class="mc"><div class="mt">⚠ アラート</div><div class="mv bad" id="m-alert">—</div><div class="mu">件</div></div>
+  </div>
+
+  <div id="al-sec"></div>
+
+  <div class="cd">
+    <div class="slbl">月次推移（過去6ヶ月）</div>
+    <div class="chw"><canvas id="ch-trend"></canvas></div>
+  </div>
+  <div class="cd">
+    <div class="slbl">直近の記録</div>
+    <div id="recent"></div>
+  </div>
+</section>
+
+<!-- ═══════════ INPUT ═══════════ -->
+<section id="sec-input" class="sec">
+
+  <!-- Step 1: ケース選択カード -->
+  <div id="inp-picker-wrap">
+    <div class="slbl" style="margin-top:0">どのケースを記録しますか？</div>
+    <div id="case-picker-grid" class="cp-grid">
+      <div style="color:#aaa;font-size:.82rem;grid-column:1/-1;text-align:center;padding:18px">読み込み中…</div>
+    </div>
+    <div id="picker-empty" style="display:none;text-align:center;padding:28px;color:#aaa">
+      <div style="font-size:2rem">📦</div>
+      <div style="margin-top:8px;font-size:.88rem">ケースがまだありません</div>
+      <button class="bmain sm" style="margin-top:12px" onclick="nav(document.querySelector('[data-s=cases]'))">
+        <i class="bi bi-plus-lg"></i> ケースを追加
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2: 記録フォーム（ケース選択後に表示） -->
+  <div id="inp-form-wrap" style="display:none">
+
+    <!-- 選択中ケース表示 + 変更ボタン -->
+    <div class="sel-case-bar" id="sel-case-bar">
+      <div>
+        <div class="name" id="sel-case-name">—</div>
+        <div class="cnt" id="sel-case-cnt">—</div>
+      </div>
+      <button class="chg" onclick="backToPicker()">変更 ›</button>
+    </div>
+
+    <div class="cd">
+      <label class="form-label">📅 日付</label>
+      <input type="date" id="inp-date" class="form-control mb-1">
+    </div>
+
+    <!-- ステージ別入力フィールド（動的生成） -->
+    <div class="cd" id="stage-fields-card">
+      <div id="stage-fields"></div>
+    </div>
+
+    <!-- 計算結果 -->
+    <div class="calcbox" id="calc-box" style="display:none">
+      <div class="calc-now">前回: <span id="calc-prev">0</span> → 保存後:</div>
+      <div class="calc-new" id="calc-new">0</div><span id="calc-unit" style="font-size:.82rem;color:#888"> 匹</span>
+      <div class="calc-formula" id="calc-formula"></div>
+    </div>
+
+    <!-- 環境条件 -->
+    <div class="cd" id="env-sec" style="display:none">
+      <div class="slbl" style="margin-top:0">🌡️ 環境条件</div>
+
+      <label class="form-label">温度 <span id="tlbl" class="good">24.0℃</span></label>
+      <div class="envrow mb-3">
+        <span style="font-size:.76rem">20</span>
+        <input type="range" id="inp-t" min="20" max="32" step="0.5" value="24" oninput="updSlider('t')">
+        <span style="font-size:.76rem">32</span>
+        <div class="evv" id="t-d">24.0℃</div>
+      </div>
+
+      <label class="form-label">湿度 <span id="hlbl" class="good">60%</span></label>
+      <div class="envrow mb-3">
+        <span style="font-size:.76rem">30</span>
+        <input type="range" id="inp-h" min="30" max="95" step="5" value="60" oninput="updSlider('h')">
+        <span style="font-size:.76rem">95</span>
+        <div class="evv" id="h-d">60%</div>
+      </div>
+
+      <div id="env-full">
+        <label class="form-label">フン量</label>
+        <div class="tgg mb-3" id="tg-feces">
+          <button class="tb" data-v="少" onclick="tgl('feces',this)">少</button>
+          <button class="tb on" data-v="普通" onclick="tgl('feces',this)">普通</button>
+          <button class="tb" data-v="多" onclick="tgl('feces',this)">多</button>
+        </div>
+        <label class="form-label">マット状態</label>
+        <div class="tgg mb-3" id="tg-mat">
+          <button class="tb" data-v="乾" onclick="tgl('mat',this)">乾</button>
+          <button class="tb on" data-v="適" onclick="tgl('mat',this)">適</button>
+          <button class="tb" data-v="湿" onclick="tgl('mat',this)">湿</button>
+        </div>
+        <label class="form-label">餌状態</label>
+        <div class="tgg mb-3" id="tg-food">
+          <button class="tb on" data-v="良" onclick="tgl('food',this)">良</button>
+          <button class="tb" data-v="普通" onclick="tgl('food',this)">普通</button>
+          <button class="tb" data-v="劣化" onclick="tgl('food',this)">劣化</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cd">
+      <label class="form-label">📝 メモ（任意）</label>
+      <textarea id="inp-notes" class="form-control" rows="2" placeholder="気になったことなど…"></textarea>
+    </div>
+
+    <div id="al-preview" style="margin-bottom:8px"></div>
+
+    <button class="bmain mb-3 edit-only" id="save-btn" onclick="submitRecord()">
+      <i class="bi bi-check-circle-fill"></i> 記録を保存
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════ CASES ═══════════ -->
+<section id="sec-cases" class="sec">
+  <button class="bmain mb-3 edit-only" onclick="openCaseModal()" style="max-width:160px">
+    <i class="bi bi-plus-lg"></i> ケース追加
+  </button>
+  <div id="case-list"><div style="text-align:center;color:#aaa;padding:24px">読み込み中…</div></div>
+</section>
+
+<!-- ═══════════ ANALYSIS ═══════════ -->
+<section id="sec-analysis" class="sec">
+  <!-- サマリーカード -->
+  <div id="an-summary" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px"></div>
+
+  <!-- ステージ別構成 -->
+  <div class="cd mb-3">
+    <div class="slbl">🥧 ステージ別 個体数構成</div>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <div style="width:150px;height:150px;flex-shrink:0"><canvas id="ch-stage-donut"></canvas></div>
+      <div id="an-stage-table" style="flex:1;min-width:150px;font-size:.82rem"></div>
+    </div>
+  </div>
+
+  <!-- 成長曲線 -->
+  <div class="cd mb-3">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div class="slbl" style="margin:0">📈 個体数推移（成長曲線）</div>
+      <select id="growth-case-sel" class="form-select form-select-sm" style="max-width:180px" onchange="renderGrowthChart()"></select>
+    </div>
+    <div class="chw" style="height:200px"><canvas id="ch-growth"></canvas></div>
+  </div>
+
+  <!-- ライフサイクルファネル -->
+  <div class="cd mb-3">
+    <div class="slbl">📊 ライフサイクル ファネル</div>
+    <div id="funnel-sec"><div style="color:#aaa;font-size:.8rem;text-align:center;padding:12px">データ読み込み中…</div></div>
+  </div>
+
+  <!-- ケース別死亡数 & 現在数 -->
+  <div class="cd mb-3">
+    <div class="slbl">📉 ケース別 累計死亡数 vs 現在数</div>
+    <div class="chw" style="height:230px"><canvas id="ch-death-bar"></canvas></div>
+  </div>
+
+  <!-- ケース健康ランキング -->
+  <div class="cd mb-3">
+    <div class="slbl">🏆 ケース健康ランキング</div>
+    <div style="font-size:.68rem;color:#aaa;margin:-4px 0 9px">
+      S=生存率100% &nbsp; A≥90% &nbsp; B≥75% &nbsp; C≥60% &nbsp; D≥40% &nbsp; F=危険
+    </div>
+    <div id="health-rank"><div style="color:#aaa;font-size:.8rem;text-align:center;padding:12px">データ読み込み中…</div></div>
+  </div>
+
+  <!-- 温度・湿度・密度 -->
+  <div class="cd mb-3"><div class="slbl">🌡️ 温度帯別 サナギ化率</div><div class="chw"><canvas id="ch-t"></canvas></div></div>
+  <div class="cd mb-3"><div class="slbl">💧 湿度帯別 サナギ化率</div><div class="chw"><canvas id="ch-h"></canvas></div></div>
+  <div class="cd mb-3"><div class="slbl">👥 密度別 サナギ化率</div><div class="chw"><canvas id="ch-d"></canvas></div></div>
+</section>
+
+<!-- ═══════════ MANAGEMENT ═══════════ -->
+<section id="sec-mgmt" class="sec">
+  <div class="stabs">
+    <div class="stab on" onclick="showMTab('親管理',this)">🪲 親管理</div>
+    <div class="stab" onclick="showMTab('ログ',this)">📋 ログ</div>
+    <div class="stab" onclick="showMTab('取込',this)">⬆ 取込</div>
+    <div class="stab" onclick="showMTab('バックアップ',this)">💾 バックアップ</div>
+  </div>
+
+  <div id="mt-親管理">
+    <button class="bmain mb-3 edit-only" onclick="openBeetleModal()" style="max-width:180px">
+      <i class="bi bi-plus-lg"></i> 親虫を登録
+    </button>
+    <div class="slbl">親虫一覧</div>
+    <div id="beetle-f-list"><div style="color:#aaa;font-size:.82rem;text-align:center;padding:16px">まだ親虫が登録されていません</div></div>
+  </div>
+
+  <!-- ログタブ -->
+  <div id="mt-ログ" style="display:none">
+    <div class="cd">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-weight:700;font-size:.9rem">📋 最近の記録ログ</div>
+        <button class="btn btn-sm btn-outline-secondary" onclick="loadMgmtLog()">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+      <div id="mgmt-log-list">
+        <div style="color:#aaa;font-size:.82rem;text-align:center;padding:16px">読み込み中…</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mt-取込" style="display:none">
+    <div class="cd">
+      <div style="font-weight:700;margin-bottom:8px"><i class="bi bi-cloud-upload"></i> JSONデータ取り込み</div>
+      <p style="font-size:.82rem;color:#555;margin-bottom:10px">
+        バックアップからエクスポートした .json ファイルを取り込みます。現在のデータは上書きされます。
+      </p>
+      <div class="dz mb-3" id="drop-zone" onclick="document.getElementById('imp-file').click()">
+        <i class="bi bi-cloud-upload" style="font-size:2.4rem"></i>
+        <div style="margin-top:7px;font-weight:700">タップしてファイルを選択</div>
+        <div style="font-size:.75rem;margin-top:3px">.json ファイル</div>
+      </div>
+      <input type="file" id="imp-file" accept=".json" style="display:none" onchange="handleImportFile(this)">
+      <div id="imp-status"></div>
+      <button class="bmain edit-only" id="imp-btn" onclick="doJsonImport()" disabled>
+        <i class="bi bi-upload"></i> 取り込み実行
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ バックアップタブ ═══ -->
+  <div id="mt-バックアップ" style="display:none">
+    <!-- エクスポート -->
+    <div class="cd mb-3">
+      <div style="font-weight:700;margin-bottom:6px"><i class="bi bi-cloud-arrow-down"></i> データをエクスポート</div>
+      <p style="font-size:.82rem;color:#555;margin-bottom:10px">
+        全ケース・日次記録・親虫データをJSONファイルで保存します。別のPCへの移行や定期バックアップに使用してください。
+      </p>
+      <button onclick="doExport()" class="bmain" style="max-width:300px">
+        <i class="bi bi-download"></i> バックアップをダウンロード (.json)
+      </button>
+    </div>
+    <!-- インポート（リストア） -->
+    <div class="cd mb-3">
+      <div style="font-weight:700;margin-bottom:6px"><i class="bi bi-cloud-arrow-up"></i> バックアップから復元</div>
+      <p style="font-size:.82rem;color:#C62828;margin-bottom:10px">
+        ⚠ 現在のデータはすべて上書きされます。事前にエクスポートしてください。
+      </p>
+      <div class="dz mb-3" id="bk-drop-zone" onclick="document.getElementById('bk-file').click()">
+        <i class="bi bi-file-earmark-arrow-up" style="font-size:2.4rem"></i>
+        <div style="margin-top:7px;font-weight:700">バックアップファイルを選択</div>
+        <div style="font-size:.75rem;margin-top:3px">.json ファイル</div>
+      </div>
+      <input type="file" id="bk-file" accept=".json" style="display:none" onchange="handleBkFile(this)">
+      <div id="bk-status"></div>
+      <button class="bmain edit-only" id="bk-btn" onclick="doRestore()" disabled>
+        <i class="bi bi-arrow-counterclockwise"></i> 復元実行
+      </button>
+    </div>
+    <!-- 全データクリア -->
+    <div class="cd" style="border:2px solid #ffcdd2">
+      <div style="font-weight:700;color:#C62828;margin-bottom:6px"><i class="bi bi-trash3"></i> 全データクリア</div>
+      <p style="font-size:.82rem;color:#555;margin-bottom:10px">
+        全ケース・日次記録・親虫データを完全に削除します。この操作は取り消せません。
+      </p>
+      <button class="btn btn-danger w-100 edit-only" onclick="clearAllData()">
+        <i class="bi bi-exclamation-triangle"></i> 全データを削除する
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ CASE MODAL ═══════ -->
+<div id="case-modal" class="mov" style="display:none" onclick="if(event.target===this)closeM('case-modal')">
+  <div class="msh">
+    <h3 id="cm-ttl">ケース追加</h3>
+    <input type="hidden" id="cm-id">
+    <label class="form-label">ケース番号 / 名称</label>
+    <input type="text" id="cm-num" class="form-control mb-2" placeholder="例: 1, A棟-01">
+    <label class="form-label">ステージ</label>
+    <select id="cm-stage" class="form-select mb-2">
+      <option value="parent" style="display:none">👑 親虫</option>
+      <option value="egg">🥚 卵</option>
+      <option value="larva" selected>🐛 幼虫</option>
+      <option value="pupa">🫘 サナギ</option>
+      <option value="adult">🪲 成虫</option>
+    </select>
+    <label class="form-label">メモ</label>
+    <textarea id="cm-notes" class="form-control mb-3" rows="2"></textarea>
+    <div class="d-flex gap-2 mb-2">
+      <button class="btn btn-secondary flex-fill" onclick="closeM('case-modal')">キャンセル</button>
+      <button class="btn btn-success flex-fill" onclick="saveCase()">保存</button>
+    </div>
+    <div id="cm-del-wrap" style="display:none">
+      <button class="btn btn-outline-danger w-100" onclick="delCase()">
+        <i class="bi bi-trash3"></i> このケースを削除
+      </button>
+    </div>
+    <!-- 親虫ケース専用の死亡削除セクション -->
+    <div id="cm-parent-del" style="display:none">
+      <hr class="my-3">
+      <div style="font-size:.8rem;color:#C62828;font-weight:700;margin-bottom:6px">
+        <i class="bi bi-heartbreak"></i> 親虫の死亡・ケース削除
+      </div>
+      <div style="font-size:.75rem;color:#888;margin-bottom:8px">
+        死亡日を入力してケースを削除すると、この親虫が死亡として記録されます。
+      </div>
+      <label class="form-label">死亡日 <span style="color:#C62828">*</span></label>
+      <input type="date" id="cm-death-date" class="form-control mb-2">
+      <button class="btn btn-danger w-100" onclick="retireParentCase()">
+        <i class="bi bi-trash3"></i> 死亡として削除
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ BEETLE MODAL ═══════ -->
+<div id="btl-modal" class="mov" style="display:none" onclick="if(event.target===this)closeM('btl-modal')">
+  <div class="msh">
+    <h3 id="bm-ttl">親虫を登録</h3>
+    <input type="hidden" id="bm-id">
+    <!-- 新規登録時: ケース番号入力 -->
+    <div id="bm-new-section">
+      <label class="form-label">ケース番号 <span style="color:#C62828">*</span></label>
+      <input type="text" id="bm-case-num" class="form-control mb-2" placeholder="例: メスA, メス1">
+      <div style="font-size:.75rem;color:#888;margin-bottom:8px">入力したケース番号でケースが自動作成されます</div>
+    </div>
+    <!-- 編集時: ケース番号を読み取り専用表示 -->
+    <div id="bm-edit-section" style="display:none">
+      <label class="form-label">ケース番号</label>
+      <div id="bm-case-display" class="form-control mb-2" style="background:#f5f5f5;color:#555;pointer-events:none"></div>
+    </div>
+    <label class="form-label">導入日</label>
+    <input type="date" id="bm-acq" class="form-control mb-2">
+    <!-- 死亡日は参照のみ（編集時かつ死亡している場合） -->
+    <div id="bm-death-row" style="display:none">
+      <label class="form-label" style="color:#888">死亡日</label>
+      <div id="bm-death-display" class="form-control mb-2" style="background:#f5f5f5;color:#c62828"></div>
+      <div style="font-size:.73rem;color:#aaa;margin-bottom:8px">※ 死亡登録はケース画面から行います</div>
+    </div>
+    <label class="form-label">メモ</label>
+    <textarea id="bm-notes" class="form-control mb-3" rows="2"></textarea>
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary flex-fill" onclick="closeM('btl-modal')">キャンセル</button>
+      <button class="btn btn-success flex-fill" onclick="saveBeetle()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ GITHUB SETTINGS MODAL ═══════ -->
+<div id="gh-modal" class="mov" style="display:none" onclick="if(event.target===this)closeM('gh-modal')">
+  <div class="msh">
+    <h3>⚙ GitHub設定</h3>
+    <p style="font-size:.8rem;color:#555;margin-bottom:12px">入力者（データを更新する人）のみ設定が必要です。閲覧のみの方は設定不要です。</p>
+    <label class="form-label">GitHubユーザー名</label>
+    <input type="text" id="gh-owner" class="form-control mb-2" placeholder="例: myname">
+    <label class="form-label">リポジトリ名</label>
+    <input type="text" id="gh-repo" class="form-control mb-2" placeholder="例: kabuto-manager">
+    <label class="form-label">Personal Access Token <span style="color:#C62828">*（入力者のみ）</span></label>
+    <input type="password" id="gh-token" class="form-control mb-1" placeholder="ghp_xxxxx...">
+    <p style="font-size:.72rem;color:#888;margin-bottom:10px">GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens<br>権限: Contents に Read and Write</p>
+    <label class="form-label">ブランチ名</label>
+    <input type="text" id="gh-branch" class="form-control mb-3" value="main">
+    <div id="gh-status" style="margin-bottom:10px"></div>
+    <div class="d-flex gap-2 mb-2">
+      <button class="btn btn-secondary flex-fill" onclick="closeM('gh-modal')">閉じる</button>
+      <button class="btn btn-success flex-fill" onclick="saveGhSettings()">保存して確認</button>
+    </div>
+    <button class="btn btn-outline-danger w-100" onclick="clearGhSettings()">設定クリア（閲覧モードに戻す）</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<nav class="bnav">
+  <button class="nb on" data-s="dashboard" onclick="nav(this)"><i class="bi bi-house-fill"></i><span>ホーム</span></button>
+  <button class="nb" data-s="input" onclick="nav(this)"><i class="bi bi-plus-circle-fill"></i><span>入力</span></button>
+  <button class="nb" data-s="cases" onclick="nav(this)"><i class="bi bi-grid-fill"></i><span>ケース</span></button>
+  <button class="nb" data-s="analysis" onclick="nav(this)"><i class="bi bi-bar-chart-fill"></i><span>分析</span></button>
+  <button class="nb" data-s="mgmt" onclick="nav(this)"><i class="bi bi-person-badge-fill"></i><span>管理</span></button>
+</nav>
+
+<script>
+// ══════════════════════════════════════════════════
+// Data + State
+// ══════════════════════════════════════════════════
+let D = { version:'3.0', saved_at:null, cases:[], records:[], beetles:[] };
+
+const S = {
+  cases:[], beetles:[],
+  stageCounts:{parent:0,egg:0,larva:0,pupa:0,adult:0},
+  cur:null, prevCount:0,
+  delta:{deaths:0,outgoing:0,incoming:0},
+  tgl:{feces:'普通',mat:'適',food:'良'},
+  importFile:null, charts:{},
+};
+
+// Stage metadata  ── 親虫 → 卵 → 幼虫 → サナギ → 成虫 ──
+const ST = {
+  parent:{lbl:'親虫',icon:'👑',cls:'s-parent',unit:'匹',xLbl:'産卵数（卵ケースへ）',xDest:'egg',  destLbl:'移動先 卵ケース',    srcPrev:null,   srcLbl:null,              noSrcCase:false,envFull:true },
+  egg:   {lbl:'卵',  icon:'🥚',cls:'s-egg',  unit:'個',xLbl:'孵化数（幼虫化）',   xDest:'larva',destLbl:'移動先 幼虫ケース',  srcPrev:'parent',srcLbl:'産卵元 親虫ケース', noSrcCase:false,envFull:false},
+  larva: {lbl:'幼虫',icon:'🐛',cls:'s-larva',unit:'匹',xLbl:'サナギ化数',         xDest:'pupa', destLbl:'移動先 サナギケース',srcPrev:'egg',  srcLbl:'受入元 卵ケース',   noSrcCase:false,envFull:true },
+  pupa:  {lbl:'サナギ',icon:'🫘',cls:'s-pupa',unit:'匹',xLbl:'羽化数',            xDest:'adult',destLbl:'移動先 成虫ケース', srcPrev:'larva',srcLbl:'受入元 幼虫ケース', noSrcCase:false,envFull:false},
+  adult: {lbl:'成虫',icon:'🪲',cls:'s-adult',unit:'匹',xLbl:null,                xDest:null,   destLbl:null,               srcPrev:'pupa', srcLbl:'受入元 サナギケース',noSrcCase:false,envFull:false},
+};
+
+// ══════════════════════════════════════════════════
+// GitHub Storage
+// ══════════════════════════════════════════════════
+function getGitHubInfo() {
+  const owner = localStorage.getItem('ghOwner');
+  const repo  = localStorage.getItem('ghRepo');
+  if (owner && repo) return { owner, repo, branch: localStorage.getItem('ghBranch')||'main' };
+  const h = window.location.hostname;
+  if (h.endsWith('.github.io')) {
+    const autoOwner = h.replace('.github.io','');
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const autoRepo = parts[0]||'';
+    if (autoOwner && autoRepo) return { owner:autoOwner, repo:autoRepo, branch:'main' };
+  }
+  return null;
+}
+
+async function loadData() {
+  const info = getGitHubInfo();
+  if (!info || !info.owner || !info.repo) return;
+  const token = localStorage.getItem('ghToken');
+  const headers = { Accept:'application/vnd.github.v3+json' };
+  if (token) headers['Authorization'] = `token ${token}`;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${info.owner}/${info.repo}/contents/data.json`, { headers });
+    if (res.ok) {
+      const meta = await res.json();
+      const json = decodeURIComponent(escape(atob(meta.content.replace(/\n/g,''))));
+      D = JSON.parse(json);
+    }
+  } catch(e) { console.warn('loadData error:', e); }
+}
+
+async function saveToGitHub() {
+  const token = localStorage.getItem('ghToken');
+  if (!token) throw new Error('トークンが設定されていません');
+  const info = getGitHubInfo();
+  if (!info) throw new Error('リポジトリ設定がありません');
+  D.saved_at = new Date().toISOString();
+  const path = `https://api.github.com/repos/${info.owner}/${info.repo}/contents/data.json`;
+  const headers = { Authorization:`token ${token}`, 'Content-Type':'application/json', Accept:'application/vnd.github.v3+json' };
+  let sha = null;
+  const metaRes = await fetch(path, { headers });
+  if (metaRes.ok) { sha = (await metaRes.json()).sha; }
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(D, null, 2))));
+  const body = { message:`Update ${new Date().toISOString().slice(0,16)}`, content, branch:info.branch };
+  if (sha) body.sha = sha;
+  const res = await fetch(path, { method:'PUT', headers, body:JSON.stringify(body) });
+  if (!res.ok) { const e=await res.json(); throw new Error(e.message||'GitHub保存エラー'); }
+}
+
+// ══════════════════════════════════════════════════
+// Computed data (replaces API calls)
+// ══════════════════════════════════════════════════
+function nextId(arr) { return arr.length ? Math.max(...arr.map(x=>x.id||0))+1 : 1; }
+
+function getCasesWithMeta(activeOnly=true) {
+  let cases = activeOnly ? D.cases.filter(c=>c.is_active) : D.cases;
+  return cases.map(c=>{
+    const recs = D.records.filter(r=>r.case_id===c.id);
+    const last = recs.length ? recs.reduce((a,b)=>a.date>b.date?a:b) : null;
+    const alerts = last ? calcAls(last.larva_count,last.temperature,last.humidity,last.feces_amount,last.mat_condition) : [];
+    return { ...c, alerts, last_record_date: last?last.date:null };
+  }).sort((a,b)=>String(a.case_number).localeCompare(String(b.case_number),undefined,{numeric:true}));
+}
+
+function computeStageCounts() {
+  const sc={parent:0,egg:0,larva:0,pupa:0,adult:0};
+  const active=D.cases.filter(c=>c.is_active);
+  for(const s of Object.keys(sc)) sc[s]=active.filter(c=>c.stage===s).reduce((a,c)=>a+(c.current_count||0),0);
+  if(!sc.parent) sc.parent=D.beetles.filter(b=>!b.death_date).length;
+  return sc;
+}
+
+function computeDashboard() {
+  const active=D.cases.filter(c=>c.is_active);
+  const sc=computeStageCounts();
+  let totalPupaRec=0,totalLarvaRec=0;
+  for(const c of active){const recs=D.records.filter(r=>r.case_id===c.id);totalPupaRec+=recs.reduce((a,r)=>a+(r.pupa_count||0),0);totalLarvaRec+=recs.reduce((a,r)=>a+(r.larva_count||0),0);}
+  const pupaRate=totalLarvaRec>0?Math.round(totalPupaRec/totalLarvaRec*1000)/10:0;
+  const alertCases=[];
+  for(const c of active){const recs=D.records.filter(r=>r.case_id===c.id);const last=recs.length?recs.reduce((a,b)=>a.date>b.date?a:b):null;if(last){const als=calcAls(last.larva_count,last.temperature,last.humidity,last.feces_amount,last.mat_condition);if(als.length)alertCases.push({case_number:c.case_number,alerts:als});}}
+  const today=new Date();const monthlyTrend=[];
+  for(let i=5;i>=0;i--){const d=new Date(today.getFullYear(),today.getMonth()-i,1);const y=d.getFullYear(),m=d.getMonth()+1;const key=`${y}/${String(m).padStart(2,'0')}`;const mRecs=D.records.filter(r=>{const[ry,rm]=r.date.split('-');return+ry===y&&+rm===m;});monthlyTrend.push({month:key,deaths:mRecs.reduce((a,r)=>a+(r.death_count||0),0),pupae:mRecs.reduce((a,r)=>a+(r.pupa_count||0),0)});}
+  const recentRecords=[...D.records].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10).map(r=>{const c=D.cases.find(x=>x.id===r.case_id);return{...r,case_number:c?c.case_number:null};});
+  return{total_cases:active.length,total_larva:active.reduce((a,c)=>a+(c.current_count||0),0),pupa_rate:pupaRate,alert_count:alertCases.length,alert_cases:alertCases,monthly_trend:monthlyTrend,recent_records:recentRecords,stage_counts:sc};
+}
+
+function computeAnalysisCases() {
+  return D.cases.filter(c=>c.is_active).map(c=>{
+    const recs=D.records.filter(r=>r.case_id===c.id);if(!recs.length)return null;
+    const totalPupa=recs.reduce((a,r)=>a+(r.pupa_count||0),0);
+    const totalDeath=recs.reduce((a,r)=>a+(r.death_count||0),0);
+    const peak=Math.max(...recs.map(r=>r.larva_count||0),0);
+    const base=peak+totalDeath;
+    const temps=recs.filter(r=>r.temperature!=null).map(r=>r.temperature);
+    return{case_id:c.id,case_number:c.case_number,stage:c.stage,current_count:c.current_count||0,
+      pupa_rate:base>0?Math.round(totalPupa/base*1000)/10:0,
+      death_rate:base>0?Math.round(totalDeath/base*1000)/10:0,
+      total_pupa:totalPupa,total_death:totalDeath,peak,base,record_count:recs.length,
+      avg_temp:temps.length?Math.round(temps.reduce((a,b)=>a+b,0)/temps.length*10)/10:null,
+      last_date:recs.reduce((a,r)=>a>r.date?a:r.date,'')};
+  }).filter(Boolean).sort((a,b)=>a.death_rate-b.death_rate);
+}
+
+function computeAnalysisTemperature() {
+  const rng={'〜22℃':{l:0,p:0,d:0},'23-25℃':{l:0,p:0,d:0},'26℃〜':{l:0,p:0,d:0}};
+  for(const r of D.records){if(r.temperature==null)continue;const k=r.temperature<23?'〜22℃':r.temperature<=25?'23-25℃':'26℃〜';rng[k].l+=r.larva_count||0;rng[k].p+=r.pupa_count||0;rng[k].d+=r.death_count||0;}
+  return Object.entries(rng).map(([range,d])=>({range,pupa_rate:d.l?Math.round(d.p/d.l*1000)/10:0,death_rate:d.l?Math.round(d.d/d.l*1000)/10:0,sample:d.l}));
+}
+
+function computeAnalysisHumidity() {
+  const rng={'〜49%':{l:0,p:0,d:0},'50-70%':{l:0,p:0,d:0},'71%〜':{l:0,p:0,d:0}};
+  for(const r of D.records){if(r.humidity==null)continue;const k=r.humidity<50?'〜49%':r.humidity<=70?'50-70%':'71%〜';rng[k].l+=r.larva_count||0;rng[k].p+=r.pupa_count||0;rng[k].d+=r.death_count||0;}
+  return Object.entries(rng).map(([range,d])=>({range,pupa_rate:d.l?Math.round(d.p/d.l*1000)/10:0,death_rate:d.l?Math.round(d.d/d.l*1000)/10:0,sample:d.l}));
+}
+
+function computeAnalysisDensity() {
+  const bk={'〜19匹':{l:0,p:0},'20-29匹':{l:0,p:0},'30-39匹':{l:0,p:0},'40匹〜':{l:0,p:0}};
+  for(const r of D.records){const c=r.larva_count||0;const k=c<20?'〜19匹':c<30?'20-29匹':c<40?'30-39匹':'40匹〜';bk[k].l+=c;bk[k].p+=r.pupa_count||0;}
+  return Object.entries(bk).map(([range,d])=>({range,pupa_rate:d.l?Math.round(d.p/d.l*1000)/10:0,sample:d.l}));
+}
+
+function computeAnalysisGrowth() {
+  return D.cases.filter(c=>c.is_active).map(c=>{
+    const recs=D.records.filter(r=>r.case_id===c.id).sort((a,b)=>a.date.localeCompare(b.date));
+    if(recs.length<2)return null;
+    return{case_id:c.id,case_number:c.case_number,stage:c.stage,data:recs.map(r=>({date:r.date,count:r.larva_count||0,deaths:r.death_count||0}))};
+  }).filter(Boolean);
+}
+
+function computeLogs(limit=80) {
+  const stageLbl={parent:'👑親虫',egg:'🥚卵',larva:'🐛幼虫',pupa:'🫘サナギ',adult:'🪲成虫'};
+  return [...D.records].sort((a,b)=>b.date.localeCompare(a.date)||(b.id||0)-(a.id||0)).slice(0,limit).map(r=>{
+    const c=D.cases.find(x=>x.id===r.case_id);if(!c)return null;
+    return{date:r.date,case_number:c.case_number,stage:c.stage,stage_lbl:stageLbl[c.stage]||c.stage,larva_count:r.larva_count||0,death_count:r.death_count||0,pupa_count:r.pupa_count||0,received_count:r.received_count||0,temperature:r.temperature,humidity:r.humidity,feces_amount:r.feces_amount||'',mat_condition:r.mat_condition||'',food_condition:r.food_condition||'',notes:r.notes||''};
+  }).filter(Boolean);
+}
+
+function computeBeetles() {
+  return D.beetles.map(b=>{
+    const c=D.cases.find(x=>x.id===b.case_id);
+    const totalEggs=b.case_id?D.records.filter(r=>r.case_id===b.case_id).reduce((a,r)=>a+(r.pupa_count||0),0):0;
+    return{...b,is_alive:!b.death_date,case_number:c?c.case_number:null,total_eggs:totalEggs,total_hatch:0,hatch_rate:0};
+  }).sort((a,b)=>(a.individual_number||0)-(b.individual_number||0));
+}
+
+// ══════════════════════════════════════════════════
+// Init
+// ══════════════════════════════════════════════════
+function isEditMode(){ return !!localStorage.getItem('ghToken'); }
+
+function applyViewMode() {
+  const edit=isEditMode();
+  document.querySelectorAll('.edit-only').forEach(el=>el.style.display=edit?'':'none');
+  const banner=document.getElementById('view-banner');
+  if(banner){
+    banner.style.display=edit?'none':'block';
+    const vbd=document.getElementById('vb-date');
+    if(vbd&&D.saved_at)vbd.textContent=D.saved_at.slice(0,16).replace('T',' ');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const t = new Date().toISOString().slice(0,10);
+  document.getElementById('inp-date').value = t;
+  document.getElementById('hdr-d').textContent = t.replace(/-/g,'/');
+  await loadData();
+  applyViewMode();
+  loadDashboard();
+  loadCasesForInput();
+  setupDrop();
+});
+
+// ══════════════════════════════════════════════════
+// Navigation
+// ══════════════════════════════════════════════════
+function nav(btn) {
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const s = btn.dataset.s;
+  document.querySelectorAll('.sec').forEach(el=>el.classList.remove('on'));
+  document.getElementById('sec-'+s).classList.add('on');
+  if(s==='dashboard') loadDashboard();
+  if(s==='cases')     loadCases();
+  if(s==='analysis')  loadAnalysis();
+  if(s==='input')     loadCasesForInput();
+  if(s==='mgmt')      loadMgmt();
+  window.scrollTo(0,0);
+}
+
+function showMTab(name, btn) {
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  ['親管理','ログ','取込','バックアップ'].forEach(n => {
+    document.getElementById('mt-'+n).style.display = n===name?'':'none';
+  });
+  if(name==='親管理') loadBeetles();
+  if(name==='ログ') loadMgmtLog();
+  if(name==='バックアップ') setupBkDrop();
+}
+
+// ══════════════════════════════════════════════════
+// Toast
+// ══════════════════════════════════════════════════
+function toast(msg, color='#333') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=color;
+  t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2800);
+}
+
+// ══════════════════════════════════════════════════
+// Dashboard
+// ══════════════════════════════════════════════════
+function loadDashboard() {
+  const d = computeDashboard();
+  document.getElementById('m-cases').textContent = d.total_cases;
+  document.getElementById('m-larva').textContent = d.total_larva;
+  document.getElementById('m-pupa').textContent  = d.pupa_rate+'%';
+  document.getElementById('m-alert').textContent = d.alert_count;
+  S.stageCounts = d.stage_counts;
+  renderLifecycle(d.stage_counts);
+  const as = document.getElementById('al-sec');
+  if(!d.alert_cases.length) {
+    as.innerHTML='<div class="cd" style="background:#E8F5E9;border-left:4px solid #4CAF50;padding:12px 15px;font-size:.84rem;color:#2E7D32"><i class="bi bi-check-circle-fill"></i> 現在アラートはありません</div>';
+  } else {
+    let h='<div class="cd"><div class="slbl">⚠ 要注意ケース</div>';
+    for(const ac of d.alert_cases) for(const al of ac.alerts)
+      h+=`<div class="ali al-${al.type}" style="cursor:pointer" onclick="goInputCase('${ac.case_number}')"><div><b>ケース ${ac.case_number}</b><br>${al.message}<br><span style="font-size:.72rem;color:#888;text-decoration:underline">→ タップして記録</span></div></div>`;
+    as.innerHTML=h+'</div>';
+  }
+  renderTrendChart(d.monthly_trend);
+  const rr=document.getElementById('recent');
+  if(!d.recent_records.length){
+    rr.innerHTML='<div style="color:#aaa;font-size:.82rem;text-align:center;padding:16px">記録はまだありません</div>';return;
+  }
+  let h='<div style="overflow-x:auto"><table class="dt"><thead><tr><th>日付</th><th>ケース</th><th>個体数</th><th>死亡</th><th>移行</th></tr></thead><tbody>';
+  for(const r of d.recent_records)
+    h+=`<tr><td>${r.date}</td><td>${r.case_number||'—'}</td><td>${r.larva_count}</td><td>${r.death_count}</td><td>${(r.pupa_count||0)+(r.eclosion_count||0)}</td></tr>`;
+  rr.innerHTML=h+'</tbody></table></div>';
+}
+
+function renderTrendChart(data) {
+  const ctx=document.getElementById('ch-trend');
+  if(S.charts.trend) S.charts.trend.destroy();
+  S.charts.trend=new Chart(ctx,{type:'bar',
+    data:{labels:data.map(d=>d.month),datasets:[
+      {label:'次段階移行',data:data.map(d=>d.pupae),backgroundColor:'#4CAF50'},
+      {label:'死亡',data:data.map(d=>d.deaths),backgroundColor:'#EF5350'},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}
+  });
+}
+
+// アラートからケース入力へジャンプ
+function goInputCase(caseNumber) {
+  const btn = document.querySelector('[data-s=input]');
+  nav(btn);
+  // ケース読み込み後に該当ケースを選択
+  setTimeout(()=>{
+    const found = S.cases.find(c=>c.case_number===caseNumber);
+    if(found) selectCase(found.id);
+  }, 400);
+}
+
+// ══════════════════════════════════════════════════
+// Input – case picker
+// ══════════════════════════════════════════════════
+function loadCasesForInput() {
+  S.cases = getCasesWithMeta(true);
+  renderCasePicker();
+}
+
+function renderCasePicker() {
+  const grid = document.getElementById('case-picker-grid');
+  const emptyEl = document.getElementById('picker-empty');
+  if(!S.cases.length) {
+    grid.style.display = 'none';
+    emptyEl.style.display = '';
+    return;
+  }
+  grid.style.display = '';
+  emptyEl.style.display = 'none';
+
+  const order = ['parent','egg','larva','pupa','adult'];
+  const sorted = [...S.cases].sort((a,b)=>order.indexOf(a.stage)-order.indexOf(b.stage));
+  let html = '';
+  let lastStage = null;
+  for(const c of sorted) {
+    const m = ST[c.stage]||ST.larva;
+    if(c.stage !== lastStage) {
+      if(lastStage !== null) html += '<div style="grid-column:1/-1;height:4px"></div>';
+      html += `<div style="grid-column:1/-1"><span class="stg ${m.cls}" style="font-size:.72rem">${m.icon} ${m.lbl}</span></div>`;
+      lastStage = c.stage;
+    }
+    const hasal = c.alerts && c.alerts.length > 0;
+    const alrtDot = hasal ? '<span class="cp-alrt">🔴</span>' : (c.last_record_date ? '' : '<span class="cp-alrt" style="font-size:.6rem">⚪</span>');
+    html += `
+    <div class="cp-card${hasal?' alert-card':''}" id="cp-${c.id}" onclick="selectCase(${c.id})">
+      ${alrtDot}
+      <div class="cp-num">ケース ${c.case_number}</div>
+      <div class="cp-cnt" style="color:${m.cls==='s-parent'?'#880E4F':m.cls==='s-larva'?'var(--lv-c)':m.cls==='s-egg'?'var(--egg-c)':m.cls==='s-pupa'?'var(--pp-c)':'var(--ad-c)'}">${c.current_count}</div>
+      <div class="cp-unit">${m.unit}</div>
+      <div class="cp-date">${c.last_record_date||'未記録'}</div>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function selectCase(id) {
+  S.cur = S.cases.find(c=>c.id==id)||null;
+  if(!S.cur) return;
+
+  // カードの選択状態を更新
+  document.querySelectorAll('.cp-card').forEach(el=>el.classList.remove('sel'));
+  const card = document.getElementById('cp-'+id);
+  if(card) card.classList.add('sel');
+
+  // ピッカーを隠してフォームを表示
+  document.getElementById('inp-picker-wrap').style.display = 'none';
+  document.getElementById('inp-form-wrap').style.display = '';
+
+  const c = S.cur;
+  const m = ST[c.stage]||ST.larva;
+  S.prevCount = c.current_count;
+  S.delta = {deaths:0, outgoing:0, incoming:0};
+
+  // 選択ケース表示バー
+  document.getElementById('sel-case-name').textContent = `${m.icon} ${m.lbl}ケース ${c.case_number}`;
+  document.getElementById('sel-case-cnt').textContent = `現在 ${c.current_count}${m.unit} ／ ${c.last_record_date||'未記録'}`;
+
+  // フォーム構築
+  renderStageFields(c.stage);
+  document.getElementById('env-sec').style.display = '';
+  document.getElementById('env-full').style.display = m.envFull?'':'none';
+  document.getElementById('calc-box').style.display = '';
+  document.getElementById('calc-unit').textContent = m.unit;
+  document.getElementById('calc-prev').textContent = c.current_count;
+  updateCalc();
+
+  window.scrollTo(0, 0);
+}
+
+function backToPicker() {
+  document.getElementById('inp-form-wrap').style.display = 'none';
+  document.getElementById('inp-picker-wrap').style.display = '';
+  S.cur = null;
+  // デルタリセット
+  S.delta = {deaths:0, outgoing:0, incoming:0};
+  document.getElementById('al-preview').innerHTML = '';
+}
+
+function caseOptsByStage(stage) {
+  return S.cases.filter(c=>c.stage===stage).map(c=>{
+    const m=ST[c.stage]||ST.larva;
+    return `<option value="${c.id}">ケース ${c.case_number}（${c.current_count}${m.unit}）</option>`;
+  }).join('') || '<option value="">（該当ケースなし）</option>';
+}
+
+// ─ Counter helper ─
+function ctrHtml(key, label, colorClass, icon) {
+  return `
+  <div class="ctr-wrap">
+    <div class="ctr-label">${icon} ${label}</div>
+    <div class="ctr-row">
+      <button class="cb" onclick="adj('${key}',-1)">−1</button>
+      <div class="cv ${colorClass}" id="cv-${key}">0</div>
+      <button class="cb" onclick="adj('${key}',1)">+1</button>
+      <button class="cb cb5" onclick="adj('${key}',5)">+5</button>
+    </div>
+  </div>`;
+}
+
+function renderStageFields(stage) {
+  const m = ST[stage] || ST.larva;
+
+  // 次ステージへの移行セクション
+  let outHtml = '';
+  if(m.xLbl) {
+    const destOpts = m.xDest ? caseOptsByStage(m.xDest) : '';
+    outHtml = `
+    ${ctrHtml('outgoing', m.xLbl+'（次ステージへ）', 'minus', '➡')}
+    <div id="dest-box" class="xfer-box mb-3" style="display:none">
+      <label class="form-label mb-1">📦 ${m.destLbl}</label>
+      <select id="dest-case" class="form-select">${destOpts}</select>
+    </div>`;
+  } else {
+    outHtml = `
+    <div id="dest-box" style="display:none"></div>
+    <div id="cv-outgoing" style="display:none">0</div>
+    <div class="info-box"><i class="bi bi-stars"></i>
+      成虫を次世代の<b>親虫として登録</b>するには<br>「管理」タブ → 親管理 から行ってください
+    </div>`;
+  }
+
+  // 前ステージからの受入セクション
+  let inHtml = '';
+  if(m.srcPrev === 'parent') {
+    // 卵ケース専用: 産卵元の親虫ケースを選択（親虫個体数は減算しない）
+    const srcOpts = caseOptsByStage('parent');
+    inHtml = `
+    ${ctrHtml('incoming', '産卵数（親虫より追加）', 'plus', '🥚')}
+    <div id="src-box" class="xfer-box incoming mb-3" style="display:none">
+      <label class="form-label mb-1">👑 ${m.srcLbl}</label>
+      <select id="src-case" class="form-select" onchange="onSrcCaseChange()">${srcOpts}</select>
+      <div style="font-size:.72rem;color:#666;margin-top:5px">
+        ※ 産卵元の親虫を選択してください（親虫ケースの個体数は変わりません）
+      </div>
+    </div>`;
+  } else if(m.srcPrev) {
+    const srcOpts = caseOptsByStage(m.srcPrev);
+    inHtml = `
+    ${ctrHtml('incoming', '受入数（前ステージから）', 'plus', '⬅')}
+    <div id="src-box" class="xfer-box incoming mb-3" style="display:none">
+      <label class="form-label mb-1">📤 ${m.srcLbl}</label>
+      <select id="src-case" class="form-select" onchange="onSrcCaseChange()">${srcOpts}</select>
+      <div style="font-size:.72rem;color:#666;margin-top:5px">
+        ※ 保存すると受入元ケースの個体数が自動で減算されます
+      </div>
+    </div>`;
+  } else {
+    inHtml = '<div id="cv-incoming" style="display:none">0</div><div id="src-box" style="display:none"></div>';
+  }
+
+  // 親虫は1匹固定のため死亡・ロス数は非表示
+  const deathHtml = stage === 'parent' ? '' : ctrHtml('deaths', '死亡・ロス数', 'minus', '❌');
+
+  // 0匹警告バナー
+  let zeroBanner = '';
+  if(stage !== 'parent' && S.prevCount === 0) {
+    zeroBanner = `<div class="ali al-stress mb-3" style="background:#FFF3E0;border-left:4px solid #FF6D00">
+      <i class="bi bi-exclamation-circle-fill" style="color:#FF6D00"></i>
+      <div>現在の個体数が <b>0匹</b> です。死亡・移行の入力はできません。受入のみ可能です。</div>
+    </div>`;
+  }
+
+  document.getElementById('stage-fields').innerHTML = `
+    <div class="slbl" style="margin-top:0">🔢 変化数を入力（差分）</div>
+    <div style="font-size:.76rem;color:#888;margin:-4px 0 12px">${stage==='parent'?'産卵数と日々の状態を記録してください':'増減した数だけ入力してください'}</div>
+    ${zeroBanner}
+    ${deathHtml}
+    ${outHtml}
+    ${inHtml}
+  `;
+}
+
+// ─ 上限計算ヘルパー ─
+function getDeathMax() {
+  if(!S.cur || S.cur.stage==='parent') return 0;
+  return S.prevCount;
+}
+function getOutgoingMax() {
+  if(!S.cur || S.cur.stage==='parent') return 0;
+  return Math.max(0, S.prevCount - (S.delta.deaths||0));
+}
+function getIncomingMax() {
+  if(!S.cur) return 999;
+  // 卵ケースの場合、産卵元は親虫なので個体数を減らさない → 上限なし
+  const m = ST[S.cur.stage]||ST.larva;
+  if(m.srcPrev==='parent') return 999;
+  // それ以外は送り元ケースの現在個体数が上限
+  const srcEl = document.getElementById('src-case');
+  if(!srcEl) return 999;
+  const srcId = parseInt(srcEl.value)||0;
+  const src = S.cases.find(x=>x.id===srcId);
+  return src ? src.current_count : 999;
+}
+
+function adj(key, delta) {
+  const prev = S.delta[key]||0;
+  let next = Math.max(0, prev + delta);
+
+  // 上限チェック
+  if(key==='deaths'){
+    const mx = getDeathMax();
+    if(next > mx){
+      next = mx;
+      if(delta > 0) toast(`死亡数は現在個体数（${mx}匹）を超えられません`, '#E65100');
+    }
+  } else if(key==='outgoing'){
+    const mx = getOutgoingMax();
+    if(next > mx){
+      next = mx;
+      if(delta > 0) toast(`移行数は残存個体数（${mx}匹）を超えられません`, '#E65100');
+    }
+  } else if(key==='incoming'){
+    const mx = getIncomingMax();
+    if(next > mx){
+      next = mx;
+      if(delta > 0) toast(`受入数は送り元ケースの個体数（${mx}匹）を超えられません`, '#E65100');
+    }
+  }
+
+  S.delta[key] = next;
+  const cvEl = document.getElementById('cv-'+key);
+  if(cvEl) cvEl.textContent = next;
+
+  // 死亡数が増えたとき、移行数が残存個体数を超えていたら自動カット
+  if(key==='deaths'){
+    const outMax = getOutgoingMax();
+    if((S.delta.outgoing||0) > outMax){
+      S.delta.outgoing = outMax;
+      const ovEl = document.getElementById('cv-outgoing');
+      if(ovEl) ovEl.textContent = outMax;
+    }
+  }
+
+  const db = document.getElementById('dest-box');
+  const sb = document.getElementById('src-box');
+  if(db) db.style.display = S.delta.outgoing>0?'':'none';
+  if(sb) sb.style.display = S.delta.incoming>0?'':'none';
+  updateCalc();
+  prevAlert();
+}
+
+function onSrcCaseChange() {
+  // 受入数の上限が変わるので、超過分をカット
+  const mx = getIncomingMax();
+  if((S.delta.incoming||0) > mx){
+    S.delta.incoming = mx;
+    const cvEl = document.getElementById('cv-incoming');
+    if(cvEl) cvEl.textContent = mx;
+    updateCalc();
+    prevAlert();
+  }
+}
+
+function calcNewCnt() {
+  const stage = S.cur ? S.cur.stage : '';
+  return stage === 'parent' ? 1
+    : Math.max(0, S.prevCount - S.delta.deaths - S.delta.outgoing + S.delta.incoming);
+}
+function updateCalc() {
+  const stage = S.cur ? S.cur.stage : '';
+  const newCnt = calcNewCnt();
+  document.getElementById('calc-new').textContent = newCnt;
+  document.getElementById('calc-formula').textContent = stage === 'parent'
+    ? `親虫は1匹固定`
+    : `${S.prevCount} − ${S.delta.deaths}(死) − ${S.delta.outgoing}(移) + ${S.delta.incoming}(受) = ${newCnt}`;
+}
+
+// ══════════════════════════════════════════════════
+// Sliders & toggles
+// ══════════════════════════════════════════════════
+function updSlider(k) {
+  const val=parseFloat(document.getElementById('inp-'+k).value);
+  if(k==='t'){
+    document.getElementById('t-d').textContent=val.toFixed(1)+'℃';
+    const l=document.getElementById('tlbl');
+    if(val>=23&&val<=25){l.textContent=val.toFixed(1)+'℃ ✓最適';l.className='good';}
+    else if(val<20||val>28){l.textContent=val.toFixed(1)+'℃';l.className='bad';}
+    else{l.textContent=val.toFixed(1)+'℃';l.className='warn';}
+  } else {
+    document.getElementById('h-d').textContent=val+'%';
+    const l=document.getElementById('hlbl');
+    if(val>=50&&val<=70){l.textContent=val+'% ✓最適';l.className='good';}
+    else{l.textContent=val+'%';l.className='warn';}
+  }
+  prevAlert();
+}
+
+function tgl(group, btn) {
+  document.querySelectorAll(`#tg-${group} .tb`).forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  S.tgl[group]=btn.dataset.v;
+  prevAlert();
+}
+
+function prevAlert() {
+  const t=parseFloat(document.getElementById('inp-t')?.value||24);
+  const h=parseFloat(document.getElementById('inp-h')?.value||60);
+  const newCnt=calcNewCnt();
+  const als=calcAls(newCnt,t,h,S.tgl.feces,S.tgl.mat);
+  const el=document.getElementById('al-preview');
+  if(!als.length){el.innerHTML='';return;}
+  el.innerHTML=als.map(a=>`<div class="ali al-${a.type} mb-2"><i class="bi bi-exclamation-triangle-fill"></i><div>${a.message}</div></div>`).join('');
+}
+
+function calcAls(cnt,t,h,feces,mat) {
+  const a=[];
+  if(feces==='多'&&h>=70)  a.push({type:'gas',  message:'ガス発生リスク：フン量多＋高湿度'});
+  if(cnt>=40&&t>=25)        a.push({type:'stress',message:'ストレスリスク：過密（40以上）＋高温'});
+  if(mat==='湿'&&t>=25)    a.push({type:'mold', message:'カビリスク：マット湿＋高温'});
+  return a;
+}
+
+// ══════════════════════════════════════════════════
+// Submit
+// ══════════════════════════════════════════════════
+async function submitRecord() {
+  if(!S.cur){toast('ケースを選択してください','#C62828');return;}
+  if(!isEditMode()){toast('閲覧モードでは入力できません','#888');return;}
+  const stage=S.cur.stage;
+  const newCnt=calcNewCnt();
+
+  if(stage !== 'parent'){
+    if(S.delta.deaths > S.prevCount){toast(`死亡数(${S.delta.deaths})が現在個体数(${S.prevCount})を超えています`,'#C62828');return;}
+    const outMax=Math.max(0,S.prevCount-S.delta.deaths);
+    if(S.delta.outgoing > outMax){toast(`移行数(${S.delta.outgoing})が残存個体数(${outMax})を超えています`,'#C62828');return;}
+  }
+
+  let pupa_count=0,eclosion_count=0;
+  if(stage==='parent') pupa_count=S.delta.outgoing;
+  if(stage==='egg')    pupa_count=S.delta.outgoing;
+  if(stage==='larva')  pupa_count=S.delta.outgoing;
+  if(stage==='pupa')   eclosion_count=S.delta.outgoing;
+
+  const destEl=document.getElementById('dest-case');
+  const srcEl=document.getElementById('src-case');
+  const destId=(destEl&&S.delta.outgoing>0)?parseInt(destEl.value)||null:null;
+  const srcId=(srcEl&&S.delta.incoming>0)?parseInt(srcEl.value)||null:null;
+
+  if(stage==='egg'&&S.delta.incoming>0&&!srcId){toast('産卵元の親虫ケースを選択してください','#C62828');return;}
+
+  const payload={case_id:S.cur.id,date:document.getElementById('inp-date').value,larva_count:newCnt,death_count:S.delta.deaths,pupa_count,eclosion_count,received_count:S.delta.incoming,source_case_id:srcId,destination_case_id:destId,temperature:parseFloat(document.getElementById('inp-t').value),humidity:parseFloat(document.getElementById('inp-h').value),feces_amount:S.tgl.feces,mat_condition:S.tgl.mat,food_condition:S.tgl.food,notes:document.getElementById('inp-notes').value||null};
+
+  const btn=document.getElementById('save-btn');if(btn)btn.disabled=true;
+  try {
+    // upsert record
+    const existing=D.records.find(r=>r.case_id===payload.case_id&&r.date===payload.date);
+    if(existing){Object.assign(existing,payload);}
+    else{D.records.push({id:nextId(D.records),...payload});}
+    // update case counts
+    const c=D.cases.find(x=>x.id===payload.case_id);if(c)c.current_count=newCnt;
+    if(destId){const t=(pupa_count||0)+(eclosion_count||0);if(t>0){const dest=D.cases.find(x=>x.id===destId);if(dest)dest.current_count=(dest.current_count||0)+t;}}
+    if(srcId&&payload.received_count>0){const src=D.cases.find(x=>x.id===srcId);if(src&&src.stage!=='parent')src.current_count=Math.max(0,(src.current_count||0)-payload.received_count);}
+    await saveToGitHub();
+    toast('記録を保存しました ✓','#2E7D32');
+    document.getElementById('inp-notes').value='';
+    S.cases=getCasesWithMeta(true);
+    backToPicker();renderCasePicker();
+    const als=calcAls(newCnt,payload.temperature,payload.humidity,payload.feces_amount,payload.mat_condition);
+    if(als.length)setTimeout(()=>toast('⚠ '+als[0].message,'#FF8F00'),900);
+  } catch(e){toast('エラー: '+e.message,'#C62828');}
+  finally{if(btn)btn.disabled=false;}
+}
+
+// ══════════════════════════════════════════════════
+// Cases
+// ══════════════════════════════════════════════════
+function loadCases() {
+  S.cases = getCasesWithMeta(true);
+  renderCaseList();
+}
+
+function renderCaseList() {
+  const el=document.getElementById('case-list');
+  if(!S.cases.length){
+    el.innerHTML='<div style="text-align:center;color:#aaa;padding:28px">ケースがまだありません</div>';return;
+  }
+  const order=['parent','egg','larva','pupa','adult'];
+  let html='';
+  for(const stage of order){
+    const list=S.cases.filter(c=>c.stage===stage);
+    if(!list.length) continue;
+    const m=ST[stage];
+    const stageNote = stage==='parent' ? '<span style="font-size:.68rem;color:#aaa;margin-left:8px">管理タブから登録</span>' : '';
+    html+=`<div class="stage-hdr"><span class="stg ${m.cls}">${m.icon} ${m.lbl}</span>${stageNote}</div>`;
+    for(const c of list){
+      const hasal=c.alerts&&c.alerts.length>0;
+      const abadgs=hasal?c.alerts.map(a=>`<span style="font-size:.63rem;color:${a.type==='stress'?'#C62828':'#FF8F00'}"> ⚠${alIcon(a.type)}</span>`).join(''):'';
+      const hdot=hasal?'🔴':c.last_record_date?'🟢':'⚪';
+      html+=`
+      <div class="ci">
+        <div class="ci-info" style="cursor:pointer" onclick="openCaseModal(${c.id})">
+          <div class="ci-name">${c.case_number} <span>${hdot}</span>${abadgs}</div>
+          <div class="ci-sub">${c.current_count}${m.unit} ／ ${c.last_record_date||'未記録'}</div>
+        </div>
+        <button class="ci-rec" onclick="goInputCase('${c.case_number}')">📝 記録</button>
+        <i class="bi bi-chevron-right" style="color:#ccc;margin-left:4px" onclick="openCaseModal(${c.id})"></i>
+      </div>`;
+    }
+  }
+  el.innerHTML=html;
+}
+function alIcon(t){return{gas:'ガス',stress:'過密',mold:'カビ'}[t]||'';}
+
+function openCaseModal(id=null){
+  if(!isEditMode()){toast('閲覧モードでは編集できません','#888');return;}
+  const c=id?S.cases.find(x=>x.id===id):null;
+  const isParent=c&&c.stage==='parent';
+  document.getElementById('cm-ttl').textContent=c?(isParent?'親虫ケース':'ケース編集'):'ケース追加';
+  document.getElementById('cm-id').value=c?c.id:'';
+  document.getElementById('cm-num').value=c?c.case_number:'';
+  document.getElementById('cm-stage').value=isParent?'parent':(c?c.stage:'larva');
+  document.getElementById('cm-stage').disabled=isParent;
+  document.getElementById('cm-notes').value=c?(c.notes||''):'';
+  document.getElementById('cm-del-wrap').style.display=(c&&!isParent)?'':'none';
+  document.getElementById('cm-parent-del').style.display=isParent?'':'none';
+  if(isParent)document.getElementById('cm-death-date').value='';
+  document.getElementById('case-modal').style.display='flex';
+}
+async function delCase(){
+  const id=parseInt(document.getElementById('cm-id').value);if(!id)return;
+  const num=document.getElementById('cm-num').value;
+  if(!confirm(`ケース「${num}」を削除しますか？\n記録データはそのまま保持されます。`))return;
+  const c=D.cases.find(x=>x.id===id);if(c)c.is_active=false;
+  try{await saveToGitHub();toast('削除しました','#333');closeM('case-modal');loadCases();loadCasesForInput();}
+  catch(e){toast('エラー: '+e.message,'#C62828');}
+}
+async function retireParentCase(){
+  const id=parseInt(document.getElementById('cm-id').value);if(!id)return;
+  const num=document.getElementById('cm-num').value;
+  const deathDate=document.getElementById('cm-death-date').value;
+  if(!deathDate){toast('死亡日を入力してください','#C62828');return;}
+  if(!confirm(`親虫ケース「${num}」を死亡として削除しますか？\n死亡日: ${deathDate}\n\n※ この操作は取り消せません`))return;
+  const c=D.cases.find(x=>x.id===id);if(c)c.is_active=false;
+  const b=D.beetles.find(x=>x.case_id===id);if(b)b.death_date=deathDate;
+  try{await saveToGitHub();toast('死亡として記録し、ケースを削除しました','#555');closeM('case-modal');loadCases();loadCasesForInput();loadBeetles();}
+  catch(e){toast('エラー: '+e.message,'#C62828');}
+}
+async function saveCase(){
+  const id=parseInt(document.getElementById('cm-id').value)||null;
+  const p={case_number:document.getElementById('cm-num').value,stage:document.getElementById('cm-stage').value,notes:document.getElementById('cm-notes').value||null};
+  if(!p.case_number){toast('ケース番号を入力してください','#C62828');return;}
+  const dup=D.cases.find(c=>c.case_number===p.case_number&&c.stage===p.stage&&c.is_active&&c.id!==id);
+  if(dup){toast(`ケース番号「${p.case_number}」は同じステージ内で既に使用されています`,'#C62828');return;}
+  if(id){const c=D.cases.find(x=>x.id===id);if(c){c.case_number=p.case_number;c.stage=p.stage;c.notes=p.notes;}}
+  else{D.cases.push({id:nextId(D.cases),case_number:p.case_number,stage:p.stage,current_count:p.stage==='parent'?1:0,capacity:80,notes:p.notes,is_active:true});}
+  try{await saveToGitHub();toast((id?'更新':'追加')+'しました ✓','#2E7D32');closeM('case-modal');loadCases();loadCasesForInput();}
+  catch(e){toast('エラー: '+e.message,'#C62828');}
+}
+
+// ══════════════════════════════════════════════════
+// Management
+// ══════════════════════════════════════════════════
+function loadMgmt(){ loadBeetles(); }
+
+function loadBeetles(){
+  S.beetles=computeBeetles();
+  S.cases=getCasesWithMeta(true);
+  const el=document.getElementById('beetle-f-list');
+  if(!S.beetles.length){
+    el.innerHTML='<div style="color:#aaa;font-size:.82rem;text-align:center;padding:20px">まだ親虫が登録されていません。<br>「親虫を登録」ボタンから追加してください。</div>';
+  } else {
+    el.innerHTML=S.beetles.map(b=>beetleCard(b)).join('');
+  }
+  applyViewMode();
+}
+
+function beetleCard(b){
+  const alive=!b.death_date;
+  const caseLbl=b.case_number||'—';
+  const deathInfo=alive?``:` <span style="font-size:.7rem;color:#c62828">[死亡: ${b.death_date}]</span>`;
+  const statLine=`産卵${b.total_eggs||0}個 ／ 孵化${b.total_hatch||0}個（${b.hatch_rate||0}%）`;
+  return `
+  <div class="bc" onclick="openBeetleModal(${b.id})" style="${alive?'':'opacity:.55'}">
+    <div class="bsex bsex-f">♀</div>
+    <div class="binfo">
+      <div class="bname">${caseLbl}${deathInfo}</div>
+      <div class="bsub">導入: ${b.acquisition_date||'—'}</div>
+      <div class="bsub">${statLine}</div>
+    </div>
+    <i class="bi bi-chevron-right" style="color:#ccc"></i>
+  </div>`;
+}
+
+function openBeetleModal(id=null){
+  if(!isEditMode()&&!id){toast('閲覧モードでは登録できません','#888');return;}
+  const b=id?S.beetles.find(x=>x.id===id):null;
+  document.getElementById('bm-ttl').textContent=b?'親虫を編集':'親虫を登録';
+  document.getElementById('bm-id').value=b?b.id:'';
+  document.getElementById('bm-acq').value=b?(b.acquisition_date||''):'';
+  document.getElementById('bm-notes').value=b?(b.notes||''):'';
+  const isEdit=!!b;
+  document.getElementById('bm-new-section').style.display=isEdit?'none':'';
+  document.getElementById('bm-edit-section').style.display=isEdit?'':'none';
+  if(!isEdit){document.getElementById('bm-case-num').value='';}
+  else{
+    document.getElementById('bm-case-display').textContent=b.case_number||'—';
+    const dr=document.getElementById('bm-death-row');
+    if(b.death_date){dr.style.display='';document.getElementById('bm-death-display').textContent=b.death_date;}
+    else{dr.style.display='none';}
+  }
+  document.getElementById('btl-modal').style.display='flex';
+}
+async function saveBeetle(){
+  const id=parseInt(document.getElementById('bm-id').value)||null;
+  const acqDate=document.getElementById('bm-acq').value||null;
+  const notes=document.getElementById('bm-notes').value||null;
+  if(id){
+    const dbB=D.beetles.find(x=>x.id===id);if(!dbB)return;
+    dbB.acquisition_date=acqDate;dbB.notes=notes;
+    try{await saveToGitHub();toast('更新しました ✓','#2E7D32');closeM('btl-modal');loadBeetles();}
+    catch(e){toast('エラー: '+e.message,'#C62828');}
+    return;
+  }
+  const caseNum=document.getElementById('bm-case-num').value.trim();
+  if(!caseNum){toast('ケース番号を入力してください','#C62828');return;}
+  let parentCase=D.cases.find(c=>c.case_number===caseNum&&c.stage==='parent'&&c.is_active);
+  if(!parentCase){
+    parentCase={id:nextId(D.cases),case_number:caseNum,stage:'parent',current_count:1,capacity:80,notes:null,is_active:true};
+    D.cases.push(parentCase);
+  } else { parentCase.current_count=1; }
+  const maxNum=D.beetles.length?Math.max(...D.beetles.map(b=>b.individual_number||0)):0;
+  D.beetles.push({id:nextId(D.beetles),individual_number:maxNum+1,acquisition_date:acqDate,death_date:null,case_id:parentCase.id,notes});
+  try{await saveToGitHub();toast('登録しました ✓','#2E7D32');closeM('btl-modal');S.cases=getCasesWithMeta(true);loadCases();loadBeetles();}
+  catch(e){toast('エラー: '+e.message,'#C62828');}
+}
+
+// ── Import / Export / Backup ──
+let _bkFile=null, _impFile=null;
+
+function setupDrop(){
+  const z=document.getElementById('drop-zone');
+  if(!z||z._ready)return;z._ready=true;
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag');});
+  z.addEventListener('dragleave',()=>z.classList.remove('drag'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)setImpFile(f);});
+}
+function handleImportFile(i){if(i.files[0])setImpFile(i.files[0]);}
+function setImpFile(f){
+  _impFile=f;
+  document.getElementById('drop-zone').innerHTML=`<i class="bi bi-file-earmark-check" style="font-size:2.2rem;color:#4CAF50"></i><div style="margin-top:6px;font-weight:700;color:#2E7D32">${f.name}</div><div style="font-size:.73rem;color:#888">${(f.size/1024).toFixed(1)} KB</div>`;
+  document.getElementById('imp-btn').disabled=false;
+}
+async function doJsonImport(){
+  if(!_impFile)return;
+  if(!confirm('⚠ 現在のデータはすべて上書きされます。よろしいですか？'))return;
+  const st=document.getElementById('imp-status');
+  st.innerHTML='<div style="color:#888;font-size:.84rem"><i class="bi bi-hourglass-split"></i> 取り込み中…</div>';
+  try{
+    const text=await _impFile.text();const data=JSON.parse(text);
+    D={version:'3.0',saved_at:data.saved_at||null,cases:data.cases||[],records:data.records||[],beetles:data.beetles||[]};
+    await saveToGitHub();
+    st.innerHTML=`<div class="ali" style="background:#E8F5E9;border-left:4px solid #4CAF50"><div style="color:#2E7D32;font-weight:700;margin-bottom:4px">✅ 取込完了</div><div style="font-size:.82rem">ケース: ${D.cases.length}件 ／ 記録: ${D.records.length}件 ／ 親虫: ${D.beetles.length}件</div></div>`;
+    loadDashboard();loadCases();loadCasesForInput();
+  }catch(e){st.innerHTML=`<div class="ali al-stress"><div style="color:#C62828"><b>エラー</b><br>${e.message}</div></div>`;}
+}
+
+function doExport(){
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`kabuto_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+
+function setupBkDrop(){
+  const z=document.getElementById('bk-drop-zone');
+  if(!z||z._bkReady)return;z._bkReady=true;
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag');});
+  z.addEventListener('dragleave',()=>z.classList.remove('drag'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag');const f=e.dataTransfer.files[0];if(f)setBkFile(f);});
+}
+function handleBkFile(i){if(i.files[0])setBkFile(i.files[0]);}
+function setBkFile(f){
+  _bkFile=f;
+  document.getElementById('bk-drop-zone').innerHTML=`<i class="bi bi-file-earmark-check" style="font-size:2.2rem;color:#4CAF50"></i><div style="margin-top:6px;font-weight:700;color:#2E7D32">${f.name}</div><div style="font-size:.73rem;color:#888">${(f.size/1024).toFixed(1)} KB</div>`;
+  document.getElementById('bk-btn').disabled=false;
+}
+async function doRestore(){
+  if(!_bkFile)return;
+  if(!confirm('⚠ 現在のデータはすべて削除されてバックアップから復元されます。\nよろしいですか？'))return;
+  const st=document.getElementById('bk-status');
+  st.innerHTML='<div style="color:#888;font-size:.84rem"><i class="bi bi-hourglass-split"></i> 復元中…</div>';
+  try{
+    const text=await _bkFile.text();const data=JSON.parse(text);
+    D={version:'3.0',saved_at:data.saved_at||null,cases:data.cases||[],records:data.records||[],beetles:data.beetles||[]};
+    await saveToGitHub();
+    st.innerHTML=`<div class="ali" style="background:#E8F5E9;border-left:4px solid #4CAF50"><div style="color:#2E7D32;font-weight:700;margin-bottom:4px">✅ 復元完了</div><div style="font-size:.82rem">ケース: ${D.cases.length}件 ／ 記録: ${D.records.length}件 ／ 親虫: ${D.beetles.length}件</div></div>`;
+    loadDashboard();loadCases();loadCasesForInput();
+  }catch(e){st.innerHTML=`<div class="ali al-stress"><div style="color:#C62828"><b>エラー</b><br>${e.message}</div></div>`;}
+}
+async function clearAllData(){
+  if(!confirm('⚠ 全ケース・日次記録・親虫データを完全に削除します。\nこの操作は取り消せません。\n本当に削除しますか？'))return;
+  if(!confirm('最終確認: 全データを削除してよろしいですか？'))return;
+  D={version:'3.0',saved_at:null,cases:[],records:[],beetles:[]};
+  try{await saveToGitHub();toast('全データを削除しました','#555');loadDashboard();loadCases();loadCasesForInput();}
+  catch(e){toast('エラー: '+e.message,'#C62828');}
+}
+
+// ══════════════════════════════════════════════════
+// GitHub Settings Modal
+// ══════════════════════════════════════════════════
+function openGhModal(){
+  const info=getGitHubInfo();
+  document.getElementById('gh-owner').value=localStorage.getItem('ghOwner')||(info?info.owner:'');
+  document.getElementById('gh-repo').value=localStorage.getItem('ghRepo')||(info?info.repo:'');
+  document.getElementById('gh-token').value=localStorage.getItem('ghToken')||'';
+  document.getElementById('gh-branch').value=localStorage.getItem('ghBranch')||'main';
+  document.getElementById('gh-status').innerHTML='';
+  document.getElementById('gh-modal').style.display='flex';
+}
+async function saveGhSettings(){
+  const owner=document.getElementById('gh-owner').value.trim();
+  const repo=document.getElementById('gh-repo').value.trim();
+  const token=document.getElementById('gh-token').value.trim();
+  const branch=document.getElementById('gh-branch').value.trim()||'main';
+  if(!owner||!repo){toast('ユーザー名とリポジトリ名を入力してください','#C62828');return;}
+  localStorage.setItem('ghOwner',owner);localStorage.setItem('ghRepo',repo);localStorage.setItem('ghBranch',branch);
+  if(token)localStorage.setItem('ghToken',token);else localStorage.removeItem('ghToken');
+  const st=document.getElementById('gh-status');
+  st.innerHTML='<div style="color:#888;font-size:.82rem">確認中…</div>';
+  try{
+    const headers={Accept:'application/vnd.github.v3+json'};if(token)headers['Authorization']=`token ${token}`;
+    const res=await fetch(`https://api.github.com/repos/${owner}/${repo}`,{headers});
+    if(res.ok){
+      st.innerHTML=`<div class="ali" style="background:#E8F5E9;border-left:4px solid #4CAF50;padding:10px"><div style="color:#2E7D32;font-weight:700">✅ 接続成功</div><div style="font-size:.78rem;margin-top:3px">モード: ${token?'入力者（編集可能）':'閲覧のみ'}</div></div>`;
+    } else {
+      st.innerHTML=`<div class="ali al-stress" style="padding:10px"><div style="color:#C62828">❌ 接続失敗 (${res.status})<br>ユーザー名・リポジトリ名を確認してください</div></div>`;
+    }
+  }catch(e){st.innerHTML=`<div class="ali al-stress" style="padding:10px"><div style="color:#C62828">❌ エラー: ${e.message}</div></div>`;}
+  await loadData();applyViewMode();loadDashboard();loadCasesForInput();
+}
+function clearGhSettings(){
+  if(!confirm('設定をクリアして閲覧モードに戻しますか？'))return;
+  ['ghOwner','ghRepo','ghToken','ghBranch'].forEach(k=>localStorage.removeItem(k));
+  document.getElementById('gh-token').value='';
+  document.getElementById('gh-status').innerHTML='<div style="color:#888;font-size:.82rem">設定をクリアしました</div>';
+  applyViewMode();
+}
+
+// ══════════════════════════════════════════════════
+// Analysis
+// ══════════════════════════════════════════════════
+let _growthData = [];
+
+function loadAnalysis(){
+  const sc=computeStageCounts();S.stageCounts=sc;
+  const cD=computeAnalysisCases(),tD=computeAnalysisTemperature(),hD=computeAnalysisHumidity(),dD=computeAnalysisDensity(),gD=computeAnalysisGrowth();
+  renderAnSummary(cD);
+  renderStageDonut(sc);
+  renderStageTable(sc);
+  _growthData=gD;
+  populateGrowthSel(gD);
+  renderFunnel(sc);
+  renderDeathBar(cD);
+  renderHealthRank(cD);
+  rBarChart('ch-t',tD,'pupa_rate','range','サナギ化率 %','#EF5350','#FF9800','#4CAF50');
+  rBarChart('ch-h',hD,'pupa_rate','range','サナギ化率 %','#1565C0','#42A5F5','#26C6DA');
+  rBarChart('ch-d',dD,'pupa_rate','range','サナギ化率 %','#6A1B9A','#AB47BC','#E91E63');
+}
+
+// ── サマリーカード ──
+function renderAnSummary(cases){
+  const sc = S.stageCounts||{};
+  const total = Object.values(sc).reduce((a,b)=>a+b,0);
+  const totalDeaths = cases.reduce((a,c)=>a+(c.total_death||0),0);
+  const base = total + totalDeaths;
+  const survivalRate = base>0 ? Math.round(total/base*100) : 100;
+  const avgDeath = cases.length ? (cases.reduce((a,c)=>a+(c.death_rate||0),0)/cases.length).toFixed(1) : 0;
+  const el = document.getElementById('an-summary');
+  if(!el) return;
+  el.innerHTML=`
+    <div class="mc"><div class="mt">管理ケース数</div><div class="mv">${cases.length}</div><div class="mu">ケース</div></div>
+    <div class="mc"><div class="mt">総個体数</div><div class="mv">${total.toLocaleString()}</div><div class="mu">匹/個</div></div>
+    <div class="mc"><div class="mt">累計死亡数</div><div class="mv" style="color:#C62828">${totalDeaths}</div><div class="mu">匹/個</div></div>
+    <div class="mc"><div class="mt">生存率</div><div class="mv" style="color:${survivalRate>=80?'#2E7D32':'#C62828'}">${survivalRate}</div><div class="mu">%</div></div>
+    <div class="mc"><div class="mt">平均死亡率</div><div class="mv" style="color:${avgDeath>15?'#C62828':avgDeath>8?'#FF8F00':'#2E7D32'}">${avgDeath}</div><div class="mu">%</div></div>
+    <div class="mc"><div class="mt">親虫数</div><div class="mv">${sc.parent||0}</div><div class="mu">匹</div></div>
+  `;
+}
+
+// ── ステージドーナツ ──
+function renderStageDonut(sc){
+  const ctx=document.getElementById('ch-stage-donut');
+  if(!ctx) return;
+  if(S.charts.stageDonut) S.charts.stageDonut.destroy();
+  const stages=['parent','egg','larva','pupa','adult'];
+  const labels=stages.map(s=>ST[s].icon+ST[s].lbl);
+  const vals=stages.map(s=>sc[s]||0);
+  const colors=['#F48FB1','#FFF176','#A5D6A7','#B39DDB','#FFCC80'];
+  S.charts.stageDonut=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2}]},
+    options:{cutout:'62%',plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12}}}}
+  });
+}
+
+// ── ステージ別テーブル ──
+function renderStageTable(sc){
+  const stages=['parent','egg','larva','pupa','adult'];
+  const total=stages.reduce((a,s)=>a+(sc[s]||0),0)||1;
+  const stageColors={parent:'#F48FB1',egg:'#FDD835',larva:'#66BB6A',pupa:'#AB47BC',adult:'#FFA726'};
+  let html='<table style="width:100%;border-collapse:collapse">';
+  for(const s of stages){
+    const m=ST[s]; const cnt=sc[s]||0; const pct=Math.round(cnt/total*100);
+    html+=`<tr>
+      <td style="padding:4px 6px"><span class="stg ${m.cls}" style="font-size:.68rem">${m.icon}${m.lbl}</span></td>
+      <td style="text-align:right;font-weight:700;padding:4px 6px">${cnt.toLocaleString()}</td>
+      <td style="padding:4px 8px;width:90px">
+        <div style="background:#eee;border-radius:4px;height:9px">
+          <div style="background:${stageColors[s]};width:${pct}%;height:9px;border-radius:4px"></div>
+        </div>
+      </td>
+      <td style="text-align:right;font-size:.75rem;color:#888;padding:4px 2px;width:32px">${pct}%</td>
+    </tr>`;
+  }
+  html+='</table>';
+  const el=document.getElementById('an-stage-table');
+  if(el) el.innerHTML=html;
+}
+
+// ── 成長曲線セレクタ ──
+function populateGrowthSel(gD){
+  const sel=document.getElementById('growth-case-sel');
+  if(!sel) return;
+  if(!gD||!gD.length){sel.innerHTML='<option>記録データなし（2日以上の記録が必要）</option>';return;}
+  sel.innerHTML=gD.map(c=>`<option value="${c.case_id}">${ST[c.stage]?.icon||''}${c.case_number}（${ST[c.stage]?.lbl||c.stage}）</option>`).join('');
+  renderGrowthChart();
+}
+
+function renderGrowthChart(){
+  const sel=document.getElementById('growth-case-sel');
+  const cid=parseInt(sel?.value);
+  const entry=_growthData.find(c=>c.case_id===cid)||_growthData[0];
+  if(!entry) return;
+  const ctx=document.getElementById('ch-growth');
+  if(S.charts.growth) S.charts.growth.destroy();
+  const m=ST[entry.stage]||ST.larva;
+  S.charts.growth=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:entry.data.map(d=>d.date),
+      datasets:[
+        {label:`${m.icon}${m.lbl} 個体数`,data:entry.data.map(d=>d.count),
+         borderColor:'#4CAF50',backgroundColor:'rgba(76,175,80,.12)',tension:.3,fill:true,pointRadius:3},
+        {label:'死亡数',data:entry.data.map(d=>d.deaths),
+         borderColor:'#EF5350',backgroundColor:'rgba(239,83,80,.1)',tension:.3,fill:false,
+         yAxisID:'y2',pointRadius:3},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11}}}},
+      scales:{
+        y:{beginAtZero:true,title:{display:true,text:m.unit,font:{size:11}}},
+        y2:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},
+            title:{display:true,text:'死亡',font:{size:11}}},
+        x:{ticks:{maxTicksLimit:8,font:{size:10}}}
+      }
+    }
+  });
+}
+
+// ── ケース別死亡数バー ──
+function renderDeathBar(data){
+  const ctx=document.getElementById('ch-death-bar');
+  if(!ctx) return;
+  if(S.charts.deathBar) S.charts.deathBar.destroy();
+  if(!data.length){
+    ctx.parentElement.innerHTML='<div style="color:#aaa;text-align:center;padding:12px;font-size:.8rem">記録データなし</div>';
+    return;
+  }
+  const sorted=[...data].sort((a,b)=>b.total_death-a.total_death).slice(0,12);
+  S.charts.deathBar=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:sorted.map(c=>`${ST[c.stage]?.icon||''}${c.case_number}`),
+      datasets:[
+        {label:'累計死亡数',data:sorted.map(c=>c.total_death),backgroundColor:'rgba(239,83,80,.75)',borderRadius:4},
+        {label:'現在個体数', data:sorted.map(c=>c.current_count),backgroundColor:'rgba(76,175,80,.75)',borderRadius:4},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11}}}},
+      scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true}}
+    }
+  });
+}
+
+// ── ログ読み込み ──
+function loadMgmtLog(){
+  const el=document.getElementById('mgmt-log-list');
+  const logs=computeLogs(80);
+  if(!logs.length){
+    el.innerHTML='<div style="color:#aaa;font-size:.82rem;text-align:center;padding:16px">記録がまだありません</div>';
+    return;
+  }
+  el.innerHTML=logs.map(l=>{
+    const m=ST[l.stage]||ST.larva;
+    const evts=[];
+    if(l.death_count>0) evts.push(`<span style="color:#C62828;font-weight:700">☠ 死亡-${l.death_count}</span>`);
+    if(l.pupa_count>0)  evts.push(`<span style="color:#7B1FA2">➡ 移行+${l.pupa_count}</span>`);
+    if(l.received_count>0) evts.push(`<span style="color:#1565C0">⬅ 受入+${l.received_count}</span>`);
+      const envParts=[];
+      if(l.temperature) envParts.push(`🌡${l.temperature}℃`);
+      if(l.humidity)    envParts.push(`💧${l.humidity}%`);
+      if(l.feces_amount)  envParts.push(`フン:${l.feces_amount}`);
+      if(l.mat_condition) envParts.push(`マット:${l.mat_condition}`);
+      if(l.food_condition) envParts.push(`餌:${l.food_condition}`);
+      return `<div style="border-bottom:1px solid #f0f0f0;padding:9px 2px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="stg ${m.cls}" style="font-size:.65rem">${m.icon}${m.lbl}</span>
+            <b>ケース ${l.case_number}</b>
+            ${evts.join(' ')}
+          </div>
+          <div style="font-size:.72rem;color:#aaa;white-space:nowrap;margin-left:6px">${l.date}</div>
+        </div>
+        <div style="font-size:.73rem;color:#888">
+          個体数: <b>${l.larva_count}</b>
+          ${envParts.length?' ／ '+envParts.join(' '):''}
+          ${l.notes?' ／ 📝'+l.notes:''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function healthGrade(deathRate, hasRecs) {
+  if(!hasRecs) return {g:'?',cls:'grd-Q',color:'#9E9E9E',score:0};
+  const s=Math.max(0,100-deathRate*2.5);
+  if(s>=90) return {g:'S',cls:'grd-S',color:'#FFA000',score:Math.round(s)};
+  if(s>=75) return {g:'A',cls:'grd-A',color:'#4CAF50',score:Math.round(s)};
+  if(s>=60) return {g:'B',cls:'grd-B',color:'#2196F3',score:Math.round(s)};
+  if(s>=45) return {g:'C',cls:'grd-C',color:'#FF9800',score:Math.round(s)};
+  if(s>=25) return {g:'D',cls:'grd-D',color:'#EF5350',score:Math.round(s)};
+  return    {g:'F',cls:'grd-F',color:'#9E9E9E',score:Math.round(s)};
+}
+
+function renderLifecycle(sc) {
+  const el=document.getElementById('lifecycle-flow');
+  if(!el) return;
+  const nodes=[
+    {key:'parent',icon:'👑',lbl:'親虫',  color:'#7B1FA2',unit:'匹'},
+    {key:'egg',   icon:'🥚',lbl:'卵',    color:'#E65100',unit:'個'},
+    {key:'larva', icon:'🐛',lbl:'幼虫',  color:'#2E7D32',unit:'匹'},
+    {key:'pupa',  icon:'🫘',lbl:'サナギ', color:'#1565C0',unit:'匹'},
+    {key:'adult', icon:'🪲',lbl:'成虫',  color:'#6A1B9A',unit:'匹'},
+  ];
+  let html='';
+  nodes.forEach((n,i)=>{
+    const cnt=sc[n.key]||0;
+    html+=`<div class="lf-node">
+      <div class="lf-icon">${n.icon}</div>
+      <div class="lf-lbl">${n.lbl}</div>
+      <div class="lf-cnt" style="color:${n.color}">${cnt.toLocaleString()}</div>
+      <div class="lf-unit">${n.unit}</div>
+    </div>`;
+    if(i<nodes.length-1) html+='<div class="lf-arr">→</div>';
+  });
+  el.innerHTML=html;
+}
+
+function renderFunnel(sc) {
+  const el=document.getElementById('funnel-sec');
+  if(!el) return;
+  const stages=[
+    {key:'parent',icon:'👑',lbl:'親虫', color:'#7B1FA2',unit:'匹'},
+    {key:'egg',   icon:'🥚',lbl:'卵',   color:'#E65100',unit:'個'},
+    {key:'larva', icon:'🐛',lbl:'幼虫', color:'#2E7D32',unit:'匹'},
+    {key:'pupa',  icon:'🫘',lbl:'サナギ',color:'#1565C0',unit:'匹'},
+    {key:'adult', icon:'🪲',lbl:'成虫', color:'#6A1B9A',unit:'匹'},
+  ];
+  const maxV=Math.max(...stages.map(s=>sc[s.key]||0),1);
+  let html='',prev=null;
+  for(const s of stages){
+    const cnt=sc[s.key]||0;
+    const w=Math.max(cnt>0?4:2,Math.round(cnt/maxV*100));
+    const sr=prev!==null&&prev>0?Math.round(cnt/prev*100):null;
+    const srColor=sr===null?'#aaa':sr>=80?'#2E7D32':sr>=50?'#FF8F00':'#C62828';
+    html+=`<div class="fnl-row">
+      <div class="fnl-icon">${s.icon}</div>
+      <div class="fnl-lbl">${s.lbl}</div>
+      <div class="fnl-bwrap">
+        <div class="fnl-bar" style="width:${w}%;background:${s.color}">${w>20?cnt.toLocaleString()+' '+s.unit:''}</div>
+      </div>
+      <div class="fnl-cnt">${cnt.toLocaleString()}<span style="font-size:.6rem;color:#bbb"> ${s.unit}</span></div>
+      <div class="fnl-pct" style="color:${srColor}">${sr!==null?sr+'%':''}</div>
+    </div>`;
+    prev=cnt;
+  }
+  el.innerHTML=html||'<div style="color:#aaa;font-size:.8rem;text-align:center;padding:12px">まだデータがありません</div>';
+}
+
+function renderHealthRank(data) {
+  const el=document.getElementById('health-rank');
+  if(!el) return;
+  if(!data.length){
+    el.innerHTML='<div style="color:#aaa;font-size:.82rem;text-align:center;padding:16px">記録データがありません</div>';return;
+  }
+  const sorted=[...data].sort((a,b)=>a.death_rate-b.death_rate);
+  const medals=['🥇','🥈','🥉'];
+  let html='';
+  sorted.forEach((c,i)=>{
+    const gr=healthGrade(c.death_rate||0,c.record_count>0);
+    const m=ST[c.stage]||ST.larva;
+    const medal=i<3?medals[i]:`${i+1}.`;
+    const barW=Math.max(2,gr.score);
+    const dr=c.death_rate||0;
+    const drColor=dr>20?'#C62828':dr>10?'#FF8F00':'#2E7D32';
+    html+=`<div class="hcd">
+      <div class="grd ${gr.cls}">${gr.g}</div>
+      <div class="hcd-info">
+        <div class="hcd-name">${medal} ${c.case_number}
+          <span class="stg ${m.cls}" style="font-size:.62rem;padding:1px 6px;margin-left:4px">${m.icon}${m.lbl}</span>
+        </div>
+        <div class="hbar"><div class="hbar-f" style="width:${barW}%;background:${gr.color}"></div></div>
+        <div class="hcd-sub">
+          スコア <b>${gr.score}点</b> ／
+          死亡率 <b style="color:${drColor}">${dr}%</b>（累計 ${c.total_death}匹死亡 / ピーク${c.base||'—'}） ／
+          現在 ${c.current_count}${m.unit} ／ ${c.record_count}日分
+        </div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+function rBarChart(id,data,vk,lk,y,c1,c2,c3){
+  const ctx=document.getElementById(id);
+  if(S.charts[id])S.charts[id].destroy();
+  S.charts[id]=new Chart(ctx,{type:'bar',
+    data:{labels:data.map(d=>d[lk]),datasets:[{label:y,data:data.map(d=>d[vk]),backgroundColor:[c1||'#4CAF50',c2||'#2E7D32',c3||'#81C784']}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}}});
+}
+function rMonthly(data){
+  const ctx=document.getElementById('ch-m');
+  if(S.charts.monthly)S.charts.monthly.destroy();
+  S.charts.monthly=new Chart(ctx,{type:'line',
+    data:{labels:data.map(d=>d.label),datasets:[
+      {label:'産卵数',data:data.map(d=>d.egg_count),  borderColor:'#4CAF50',tension:.3,fill:false},
+      {label:'ロス数',data:data.map(d=>d.loss_count), borderColor:'#EF5350',tension:.3,fill:false},
+      {label:'孵化数',data:data.map(d=>d.hatch_count),borderColor:'#2196F3',tension:.3,fill:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}});
+}
+
+// ══════════════════════════════════════════════════
+// Modals
+// ══════════════════════════════════════════════════
+function closeM(id){document.getElementById(id).style.display='none';}
+</script>
+</body>
+</html>
