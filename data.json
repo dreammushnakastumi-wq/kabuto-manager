@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-16T10:17:01.521Z",
+  "saved_at": "2026-04-16T10:17:17.009Z",
   "cases": [
     {
       "id": 1,
@@ -64,6 +64,15 @@
       "capacity": 80,
       "notes": null,
       "is_active": true
+    },
+    {
+      "id": 8,
+      "case_number": "メス4",
+      "stage": "parent",
+      "current_count": 1,
+      "capacity": 80,
+      "notes": null,
+      "is_active": true
     }
   ],
   "records": [],
@@ -90,6 +99,14 @@
       "acquisition_date": null,
       "death_date": null,
       "case_id": 7,
+      "notes": null
+    },
+    {
+      "id": 4,
+      "individual_number": 4,
+      "acquisition_date": null,
+      "death_date": null,
+      "case_id": 8,
       "notes": null
     }
   ]
