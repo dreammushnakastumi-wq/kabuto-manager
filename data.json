@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:18:30.128Z",
+  "saved_at": "2026-04-24T10:18:38.787Z",
   "cases": [
     {
       "id": 1,
@@ -352,6 +352,15 @@
       "capacity": 80,
       "notes": null,
       "is_active": true
+    },
+    {
+      "id": 40,
+      "case_number": "4",
+      "stage": "parent",
+      "current_count": 1,
+      "capacity": 80,
+      "notes": null,
+      "is_active": true
     }
   ],
   "records": [],
@@ -482,6 +491,14 @@
       "acquisition_date": "2026-04-24",
       "death_date": null,
       "case_id": 39,
+      "notes": null
+    },
+    {
+      "id": 17,
+      "individual_number": 17,
+      "acquisition_date": "2026-04-24",
+      "death_date": null,
+      "case_id": 40,
       "notes": null
     }
   ]
