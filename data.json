@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:24:16.721Z",
+  "saved_at": "2026-04-24T10:24:32.719Z",
   "cases": [
     {
       "id": 1,
@@ -40,7 +40,7 @@
     },
     {
       "id": 5,
-      "case_number": "1",
+      "case_number": "メス",
       "stage": "parent",
       "current_count": 1,
       "capacity": 80,
