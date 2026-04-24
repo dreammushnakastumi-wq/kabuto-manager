@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:15:22.567Z",
+  "saved_at": "2026-04-24T10:16:35.481Z",
   "cases": [
     {
       "id": 1,
@@ -441,6 +441,14 @@
       "acquisition_date": "2026-04-24",
       "death_date": null,
       "case_id": 38,
+      "notes": null
+    },
+    {
+      "id": 13,
+      "individual_number": 13,
+      "acquisition_date": "2026-04-24",
+      "death_date": null,
+      "case_id": 5,
       "notes": null
     }
   ]
