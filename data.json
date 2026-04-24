@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:05:22.547Z",
+  "saved_at": "2026-04-24T10:09:53.011Z",
   "cases": [
     {
       "id": 1,
@@ -22,7 +22,7 @@
     },
     {
       "id": 3,
-      "case_number": "1",
+      "case_number": "41",
       "stage": "pupa",
       "current_count": 0,
       "capacity": 80,
