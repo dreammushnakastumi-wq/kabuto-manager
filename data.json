@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:23:47.977Z",
+  "saved_at": "2026-04-24T10:23:58.210Z",
   "cases": [
     {
       "id": 1,
@@ -360,7 +360,7 @@
       "current_count": 1,
       "capacity": 80,
       "notes": null,
-      "is_active": true
+      "is_active": false
     },
     {
       "id": 41,
@@ -515,7 +515,7 @@
       "id": 17,
       "individual_number": 17,
       "acquisition_date": "2026-04-24",
-      "death_date": null,
+      "death_date": "2026-04-24",
       "case_id": 40,
       "notes": null
     },
