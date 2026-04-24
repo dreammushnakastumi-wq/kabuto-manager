@@ -1,12 +1,12 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:29:43.741Z",
+  "saved_at": "2026-04-24T10:30:02.460Z",
   "cases": [
     {
       "id": 1,
       "case_number": "1",
       "stage": "egg",
-      "current_count": 490,
+      "current_count": 464,
       "capacity": 80,
       "notes": null,
       "is_active": true
@@ -168,7 +168,7 @@
       "id": 19,
       "case_number": "13",
       "stage": "larva",
-      "current_count": 0,
+      "current_count": 26,
       "capacity": 80,
       "notes": null,
       "is_active": true
@@ -463,6 +463,24 @@
       "pupa_count": 0,
       "eclosion_count": 0,
       "received_count": 22,
+      "source_case_id": 1,
+      "destination_case_id": null,
+      "temperature": 24,
+      "humidity": 60,
+      "feces_amount": "普通",
+      "mat_condition": "適",
+      "food_condition": "良",
+      "notes": null
+    },
+    {
+      "id": 6,
+      "case_id": 19,
+      "date": "2026-04-24",
+      "larva_count": 26,
+      "death_count": 0,
+      "pupa_count": 0,
+      "eclosion_count": 0,
+      "received_count": 26,
       "source_case_id": 1,
       "destination_case_id": null,
       "temperature": 24,
