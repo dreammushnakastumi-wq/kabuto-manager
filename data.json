@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:10:02.183Z",
+  "saved_at": "2026-04-24T10:12:52.919Z",
   "cases": [
     {
       "id": 1,
@@ -36,7 +36,7 @@
       "current_count": 0,
       "capacity": 80,
       "notes": null,
-      "is_active": true
+      "is_active": false
     },
     {
       "id": 5,
