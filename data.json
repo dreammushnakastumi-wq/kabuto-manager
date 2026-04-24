@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:05:16.806Z",
+  "saved_at": "2026-04-24T10:05:22.547Z",
   "cases": [
     {
       "id": 1,
@@ -311,6 +311,15 @@
     {
       "id": 35,
       "case_number": "46",
+      "stage": "larva",
+      "current_count": 0,
+      "capacity": 80,
+      "notes": null,
+      "is_active": true
+    },
+    {
+      "id": 36,
+      "case_number": "47",
       "stage": "larva",
       "current_count": 0,
       "capacity": 80,
