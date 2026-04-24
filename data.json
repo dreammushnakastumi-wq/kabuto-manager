@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:35:52.134Z",
+  "saved_at": "2026-04-24T10:39:12.192Z",
   "cases": [
     {
       "id": 1,
@@ -385,6 +385,15 @@
       "case_number": "単独飼育",
       "stage": "larva",
       "current_count": 37,
+      "capacity": 80,
+      "notes": null,
+      "is_active": true
+    },
+    {
+      "id": 44,
+      "case_number": "8",
+      "stage": "larva",
+      "current_count": 0,
       "capacity": 80,
       "notes": null,
       "is_active": true
