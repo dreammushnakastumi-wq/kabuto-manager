@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "saved_at": "2026-04-24T10:42:03.754Z",
+  "saved_at": "2026-04-24T10:43:09.973Z",
   "cases": [
     {
       "id": 1,
@@ -294,7 +294,7 @@
       "id": 33,
       "case_number": "43",
       "stage": "larva",
-      "current_count": 6,
+      "current_count": 5,
       "capacity": 80,
       "notes": null,
       "is_active": true
@@ -746,12 +746,12 @@
       "id": 20,
       "case_id": 33,
       "date": "2026-04-24",
-      "larva_count": 6,
-      "death_count": 0,
+      "larva_count": 5,
+      "death_count": 1,
       "pupa_count": 0,
       "eclosion_count": 0,
-      "received_count": 3,
-      "source_case_id": 1,
+      "received_count": 0,
+      "source_case_id": null,
       "destination_case_id": null,
       "temperature": 24,
       "humidity": 60,
